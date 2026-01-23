@@ -1,0 +1,55 @@
+Metadata-Version: 2.4
+Name: my_dh_library
+Version: 0.1.0
+Summary: Reusable Deephaven query functions
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: deephaven-server>=0.35.0
+
+# My Deephaven Library
+
+A library-only package providing reusable Deephaven query functions. This package contains no CLI tools - it's designed to be imported and used as a library in other Python projects.
+
+## Installation
+
+```shell
+pip install .
+```
+
+Or in editable mode for development:
+
+```shell
+pip install -e .
+```
+
+## Usage
+
+Import and use the library functions in your Python code:
+
+```python
+from my_dh_library.queries import filter_by_threshold, add_computed_columns
+from deephaven import read_csv
+
+# Use the library functions
+data = read_csv("data.csv")
+filtered = filter_by_threshold(data, "Score", 75.0)
+enhanced = add_computed_columns(filtered)
+```
+
+## Available Functions
+
+### Query Functions (`my_dh_package.queries`)
+
+- `filter_by_threshold(table, column, threshold)` - Filter table rows where column value exceeds threshold
+- `add_computed_columns(table)` - Add commonly used computed columns to a table
+- `summarize_by_group(table, group_col, value_col)` - Create summary statistics grouped by a column
+
+### Utility Functions (`my_dh_package.utils`)
+
+- `validate_columns(table, required_columns)` - Check if table has all required columns
+- `get_table_info(table)` - Get basic information about a table
+
+## Requirements
+
+- Python 3.8 or later
+- Deephaven Server 0.35.0 or later

@@ -1,0 +1,2 @@
+[console_scripts]
+my-dh-query = my_dh_cli.cli:app

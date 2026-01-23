@@ -1,0 +1,59 @@
+Metadata-Version: 2.4
+Name: my_dh_cli
+Version: 0.1.0
+Summary: Command-line tool for data processing
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: deephaven-server>=0.35.0
+Requires-Dist: click>=8.0.0
+
+# My Deephaven CLI
+
+A CLI-only package providing command-line tools for data processing with Deephaven. This package is designed to be installed and run as a command-line tool.
+
+## Installation
+
+```shell
+pip install .
+```
+
+Or in editable mode for development:
+
+```shell
+pip install -e .
+```
+
+## Usage
+
+After installation, use the command-line tool:
+
+```shell
+my-dh-query input_data.csv
+my-dh-query input_data.csv --verbose
+```
+
+### Module Execution
+
+You can also run without installation using module execution:
+
+```shell
+python -m my_dh_cli input_data.csv
+```
+
+## Commands
+
+### my-dh-query
+
+Process a CSV file with Deephaven.
+
+**Arguments:**
+- `input_file` - Path to the CSV file to process
+
+**Options:**
+- `--verbose, -v` - Enable verbose output
+
+## Requirements
+
+- Python 3.8 or later
+- Deephaven Server 0.35.0 or later
+- Click 8.0.0 or later
