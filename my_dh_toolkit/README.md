@@ -32,11 +32,11 @@ from my_dh_toolkit.queries import filter_by_threshold, add_computed_columns
 from my_dh_toolkit import my_dh_query, batch_process
 from deephaven import read_csv
 
-data = read_csv("data.csv")
+data = read_csv("data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 
 # Or use the exported functions
-result = my_dh_query("data.csv", verbose=True)
+result = my_dh_query("data/sample.csv", verbose=True)
 ```
 
 ## Usage as CLI Functions
@@ -52,8 +52,8 @@ server.start()
 
 # Use the CLI functions
 from my_dh_toolkit import my_dh_query, batch_process
-result = my_dh_query("../data/sample.csv", verbose=True)
-batch_process("../data/batch/", "./output", verbose=True)
+result = my_dh_query("data/sample.csv", verbose=True)
+batch_process("data/batch/", "./output", verbose=True)
 ```
 
 ## Commands

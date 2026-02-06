@@ -34,7 +34,7 @@ server.start()
 
 # Now use the CLI function
 from my_dh_cli.cli import my_dh_query
-result = my_dh_query("../data/sample.csv", verbose=True)
+result = my_dh_query("data/sample.csv", verbose=True)
 print(f"Processed {result.size} rows")
 ```
 

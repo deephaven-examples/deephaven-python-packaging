@@ -31,7 +31,7 @@ server.start()
 from my_dh_library.queries import filter_by_threshold, add_computed_columns
 from deephaven import read_csv
 
-data = read_csv("data.csv")
+data = read_csv("data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
