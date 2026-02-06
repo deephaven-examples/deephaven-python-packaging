@@ -8,7 +8,18 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
     
     input_path = Path(directory)
     output_path = Path(output_dir)
-    output_path.mkdir(exist_ok=True)
+    
+    if not input_path.exists():
+        raise click.ClickException(f"Input directory does not exist: '{input_path}'")
+    if not input_path.is_dir():
+        raise click.ClickException(f"Input path is not a directory: '{input_path}'")
+    
+    try:
+        output_path.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        raise click.ClickException(f"Permission denied: Cannot create output directory '{output_path}'")
+    except OSError as e:
+        raise click.ClickException(f"Failed to create output directory '{output_path}': {e}")
 
     csv_files = list(input_path.glob("*.csv"))
 
@@ -20,10 +31,23 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
             click.echo(f"Processing {csv_file.name}...")
 
         table = read_csv(str(csv_file))
+        
+        if "Score" not in table.columns:
+            raise click.ClickException(
+                f"File '{csv_file.name}' is missing required column 'Score'. "
+                f"Available columns: {', '.join(table.columns)}"
+            )
+        
         processed = table.update(formulas=["ProcessedScore = Score * 2"])
+        
+        output_file = output_path / f"processed_{csv_file.name}"
+        try:
+            processed.to_csv(str(output_file))
+        except Exception as e:
+            raise click.ClickException(f"Failed to write output file '{output_file}': {e}")
 
         if verbose:
-            click.echo(f"  Processed {processed.size} rows")
+            click.echo(f"  Processed {processed.size} rows -> {output_file.name}")
 
 
 @click.command()
