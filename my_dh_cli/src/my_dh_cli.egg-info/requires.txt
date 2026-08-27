@@ -1,2 +1,0 @@
-deephaven-server>=0.35.0
-click>=8.0.0
