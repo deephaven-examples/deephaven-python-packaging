@@ -21,10 +21,11 @@ def my_dh_query(input_file: str, verbose: bool = False):
     except Exception as e:
         raise click.ClickException(f"Failed to read CSV file '{input_file}': {e}")
     
-    if "Score" not in source.columns:
+    column_names = [col.name for col in source.columns]
+    if "Score" not in column_names:
         raise click.ClickException(
             f"File '{input_path.name}' is missing required column 'Score'. "
-            f"Available columns: {', '.join(source.columns)}"
+            f"Available columns: {', '.join(column_names)}"
         )
 
     result = source.update(formulas=["DoubleScore = Score * 2"])

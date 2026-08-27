@@ -1,6 +1,7 @@
 """Reusable Deephaven query functions."""
 
 from deephaven.table import Table
+from deephaven import agg
 from .utils import validate_columns
 
 
@@ -26,9 +27,9 @@ def summarize_by_group(table: Table, group_col: str, value_col: str) -> Table:
     validate_columns(table, [group_col, value_col], raise_error=True)
     return table.agg_by(
         [
-            f"Sum = sum({value_col})",
-            f"Avg = avg({value_col})",
-            f"Count = count()",
+            agg.sum_(f"Sum = {value_col}"),
+            agg.avg(f"Avg = {value_col}"),
+            agg.count_("Count"),
         ],
         by=[group_col],
     )

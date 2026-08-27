@@ -4,7 +4,7 @@ from pathlib import Path
 
 def batch_process(directory: str, output_dir: str, verbose: bool = False) -> None:
     """Process multiple CSV files from a directory."""
-    from deephaven import read_csv
+    from deephaven import read_csv, write_csv
     
     input_path = Path(directory)
     output_path = Path(output_dir)
@@ -32,17 +32,18 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 
         table = read_csv(str(csv_file))
         
-        if "Score" not in table.columns:
+        column_names = [col.name for col in table.columns]
+        if "Score" not in column_names:
             raise click.ClickException(
                 f"File '{csv_file.name}' is missing required column 'Score'. "
-                f"Available columns: {', '.join(table.columns)}"
+                f"Available columns: {', '.join(column_names)}"
             )
         
         processed = table.update(formulas=["ProcessedScore = Score * 2"])
         
         output_file = output_path / f"processed_{csv_file.name}"
         try:
-            processed.to_csv(str(output_file))
+            write_csv(processed, str(output_file))
         except Exception as e:
             raise click.ClickException(f"Failed to write output file '{output_file}': {e}")
 
