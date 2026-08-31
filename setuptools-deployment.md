@@ -55,6 +55,29 @@ my_dh_project/
 
 The package name under `src/` determines how users import your code. For example, with `src/my_dh_library/`, users import via `from my_dh_library import ...`.
 
+## Server initialization
+
+Deephaven requires a running server before using any Deephaven functionality. The server must be initialized in the same Python process that uses Deephaven:
+
+```python
+from deephaven_server import Server
+
+# Initialize and start the server
+server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
+
+# Now you can import and use Deephaven
+from deephaven import read_csv
+data = read_csv("data.csv")
+```
+
+### Key points
+
+- Each Python process has its own JVM
+- Starting a server in one terminal doesn't help another terminal
+- Entry-point CLI commands should start their own server internally (see [Use CLI functions](#use-cli-functions)) so they work standalone; only functions imported directly need an already-running session
+- The server uses approximately 4GB of memory by default (configurable via `jvm_args`)
+
 ## Packaging scenarios
 
 Different projects have different needs. The example repository demonstrates three common scenarios:
@@ -111,10 +134,8 @@ my_dh_cli/
 
 **Usage:**
 
-```python
-# CLI functions are used within a Python session
-from my_dh_cli.cli import my_dh_query
-result = my_dh_query("data.csv", verbose=True)
+```bash
+my-dh-query data.csv --verbose
 ```
 
 **When to use:**
@@ -148,14 +169,15 @@ my_dh_toolkit/
 ```python
 # As a library
 from my_dh_toolkit.queries import filter_by_threshold
-from my_dh_toolkit import my_dh_query
 
-# Use library functions
 data = read_csv("data.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
+```
 
-# Or use CLI functions
-result = my_dh_query("data.csv", verbose=True)
+```bash
+# As CLI commands
+my-dh-query data.csv --verbose
+my-dh-process data/ --output results/ --verbose
 ```
 
 **When to use:**
@@ -396,6 +418,10 @@ def my_dh_query(input_file: str, verbose: bool = False):
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def app(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
     result = my_dh_query(input_file, verbose)
     click.echo("Processing complete!")
 
@@ -529,6 +555,10 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def process(directory: str, output: str, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
     batch_process(directory, output, verbose)
     click.echo("Batch processing complete!")
 
@@ -670,7 +700,13 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 
 ### Use CLI functions
 
-CLI functions must be used within the same Python session as the server:
+Entry-point commands like `my-dh-query` start their own Deephaven server, so they run as standalone terminal commands:
+
+```bash
+my-dh-query data.csv --verbose
+```
+
+The underlying function is also importable, so you can call it directly within a Python session that already has a server running:
 
 ```python
 # Start the Deephaven server
@@ -678,7 +714,7 @@ from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
-# Use CLI functions
+# Call the underlying function directly
 from my_dh_cli.cli import my_dh_query
 result = my_dh_query("data.csv", verbose=True)
 ```
@@ -728,29 +764,6 @@ This creates a `.whl` file in `dist/` that can be:
 - Test with different Deephaven versions
 - Include sample data for testing
 - Document how to run tests
-
-## Server initialization
-
-Deephaven requires a running server before using any Deephaven functionality. The server must be initialized in the same Python process that uses Deephaven:
-
-```python
-from deephaven_server import Server
-
-# Initialize and start the server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
-server.start()
-
-# Now you can import and use Deephaven
-from deephaven import read_csv
-data = read_csv("data.csv")
-```
-
-### Key points
-
-- Each Python process has its own JVM
-- Starting a server in one terminal doesn't help another terminal
-- CLI tools must run in the same session as the server
-- The server uses approximately 4GB of memory by default (configurable via `jvm_args`)
 
 ## Next steps
 

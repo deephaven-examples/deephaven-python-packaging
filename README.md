@@ -1,6 +1,6 @@
 # Python Packaging with Deephaven
 
-This repository demonstrates how to create and deploy Python packages that use Deephaven. It shows three complete packaging scenarios following the official [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) recommendations.
+This repository demonstrates how to create and deploy Python packages that use Deephaven Community Core. It shows three complete packaging scenarios following the official [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) recommendations.
 
 This example accompanies the [Packaging custom code and dependencies](https://deephaven.io/core/docs/how-to-guides/sysadmin/setuptools-deployment/) guide in the Deephaven documentation.
 
@@ -59,10 +59,8 @@ my_dh_cli/
 ```
 
 **Usage:**
-```python
-# Use within a Python session with server running
-from my_dh_cli.cli import my_dh_query
-result = my_dh_query("input_data.csv", verbose=True)
+```shell
+my-dh-query input_data.csv --verbose
 ```
 
 ### 3. Combined package (`my_dh_toolkit/`)
@@ -89,11 +87,10 @@ my_dh_toolkit/
 from my_dh_toolkit.queries import filter_by_threshold
 ```
 
-```python
-# As CLI functions (within Python session)
-from my_dh_toolkit import my_dh_query, batch_process
-result = my_dh_query("input_data.csv", verbose=True)
-batch_process("data/", "results/", verbose=True)
+```shell
+# As CLI commands
+my-dh-query input_data.csv --verbose
+my-dh-process data/ --output results/ --verbose
 ```
 
 ## Quick start
@@ -131,16 +128,15 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 
 ### Try the CLI-only package
 
-> [!NOTE]
-> CLI tools require a Deephaven server running in the same Python process. The examples below show how to use the CLI functions within a Python session where the server is already started. True standalone CLI commands (run from a separate terminal) are not practical with Deephaven due to JVM initialization requirements.
+Install the package, then run the installed command directly from a terminal. `my-dh-query` starts its own Deephaven server, so no separate session setup is needed:
 
 ```shell
 cd my_dh_cli
 pip install -e .
-python
+my-dh-query ../data/sample.csv --verbose
 ```
 
-Then in Python:
+The underlying `my_dh_query()` function is also importable, so you can call it directly within a Python session that already has a server running (useful when composing it with other Deephaven code):
 
 ```python
 # Start the Deephaven server
@@ -148,7 +144,7 @@ from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
-# Now use the CLI function
+# Call the underlying function directly
 from my_dh_cli.cli import my_dh_query
 result = my_dh_query("../data/sample.csv", verbose=True)
 print(f"Processed {result.size} rows")
@@ -156,16 +152,16 @@ print(f"Processed {result.size} rows")
 
 ### Try the combined package
 
-> [!NOTE]
-> Like the CLI-only package, the CLI commands require a Deephaven server in the same Python process. Use the library functions within a Python session.
+Install the package, then run the installed commands directly from a terminal. Both `my-dh-query` and `my-dh-process` start their own Deephaven server:
 
 ```shell
 cd my_dh_toolkit
 pip install -e .
-python
+my-dh-query ../data/sample.csv --verbose
+my-dh-process ../data/batch --output ./output --verbose
 ```
 
-Then in Python:
+The library functions are also importable for use within a Python session that already has a server running:
 
 ```python
 # Start the Deephaven server
@@ -180,7 +176,7 @@ from deephaven import read_csv
 data = read_csv("../data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 
-# Or use the CLI functions
+# Or call the underlying CLI functions directly
 from my_dh_toolkit import my_dh_query, batch_process
 result = my_dh_query("../data/sample.csv", verbose=True)
 batch_process("../data/batch/", "./output", verbose=True)

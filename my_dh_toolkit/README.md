@@ -1,6 +1,6 @@
 # My Deephaven Toolkit
 
-A combined package providing both reusable library code and command-line functions for Deephaven. This package can be used as both a library (imported in Python code) and as CLI functions (called within a Python session).
+A combined package providing both reusable library code and command-line tools for Deephaven. This package can be used as both a library (imported in Python code) and as standalone CLI commands.
 
 ## Installation
 
@@ -39,10 +39,16 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 result = my_dh_query("data/sample.csv", verbose=True)
 ```
 
-## Usage as CLI Functions
+## Usage as CLI Commands
 
-> [!NOTE]
-> CLI functions require a Deephaven server running in the same Python process. Use them within a Python session where the server is already started.
+Run the installed commands directly from a terminal. Both `my-dh-query` and `my-dh-process` start their own Deephaven server:
+
+```shell
+my-dh-query data/sample.csv --verbose
+my-dh-process data/batch --output ./output --verbose
+```
+
+The underlying functions are also importable, so you can call them directly within a Python session that already has a server running:
 
 ```python
 # Start the Deephaven server
@@ -50,7 +56,7 @@ from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
-# Use the CLI functions
+# Call the underlying functions directly
 from my_dh_toolkit import my_dh_query, batch_process
 result = my_dh_query("data/sample.csv", verbose=True)
 batch_process("data/batch/", "./output", verbose=True)

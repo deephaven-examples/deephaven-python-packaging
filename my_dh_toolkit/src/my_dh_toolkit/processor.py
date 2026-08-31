@@ -57,6 +57,10 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def process(directory: str, output: str, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
     batch_process(directory, output, verbose)
     click.echo("Batch processing complete!")
 

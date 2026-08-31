@@ -41,6 +41,10 @@ def my_dh_query(input_file: str, verbose: bool = False):
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def app(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
     result = my_dh_query(input_file, verbose)
     click.echo("Processing complete!")
 

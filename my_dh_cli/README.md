@@ -16,15 +16,13 @@ pip install -e .
 
 ## Usage
 
-> [!NOTE]
-> CLI functions require a Deephaven server running in the same Python process. Use the functions within a Python session where the server is already started.
+Run the installed command directly from a terminal. `my-dh-query` starts its own Deephaven server, so no separate session setup is needed:
 
 ```shell
-pip install -e .
-python
+my-dh-query data/sample.csv --verbose
 ```
 
-Then in Python:
+The underlying `my_dh_query()` function is also importable, so you can call it directly within a Python session that already has a server running:
 
 ```python
 # Start the Deephaven server
@@ -32,7 +30,7 @@ from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
-# Now use the CLI function
+# Call the underlying function directly
 from my_dh_cli.cli import my_dh_query
 result = my_dh_query("data/sample.csv", verbose=True)
 print(f"Processed {result.size} rows")
