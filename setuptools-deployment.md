@@ -73,10 +73,10 @@ data = read_csv("data.csv")
 
 ### Key points
 
-- Each Python process has its own JVM
-- Starting a server in one terminal doesn't help another terminal
-- Entry-point CLI commands should start their own server internally (see [Use CLI functions](#use-cli-functions)) so they work standalone; only functions imported directly need an already-running session
-- The server uses approximately 4GB of memory by default (configurable via `jvm_args`)
+- Each Python process has its own JVM.
+- Starting a server in one terminal doesn't help another terminal.
+- Entry-point CLI commands should start their own server internally (see [Use CLI functions](#use-cli-functions)) so they work standalone; only functions imported directly need an already-running session.
+- The server uses approximately 4GB of memory by default (configurable via `jvm_args`).
 
 ## Packaging scenarios
 
@@ -109,10 +109,10 @@ data = read_csv("data.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 ```
 
-**When to use:**
+**Use when:**
 
 - Creating reusable utilities for other projects.
-- No command-line interface needed.
+- You don't need a command-line interface.
 - Code will be imported, not executed directly.
 
 ### CLI-only package
@@ -138,11 +138,11 @@ my_dh_cli/
 my-dh-query data.csv --verbose
 ```
 
-**When to use:**
+**Use when:**
 
 - Building command-line tools for data processing
-- Want clean function interfaces
-- No library code to expose to other projects
+- You need clean function interfaces
+- You don't need to expose library code to other projects
 
 ### Combined package
 
@@ -180,10 +180,10 @@ my-dh-query data.csv --verbose
 my-dh-process data/ --output results/ --verbose
 ```
 
-**When to use:**
+**Use when:**
 
-- Need both library and CLI functionality
-- Want to provide multiple interfaces to the same code
+- You need both library and CLI functionality
+- You want to provide multiple interfaces to the same code
 - Library functions are useful independently
 
 ## Create a new package
@@ -603,7 +603,7 @@ where = ["src"]
 - **`[build-system]`** - Specifies setuptools as the build backend
 - **`[project]`** - Package metadata and dependencies
 - **`name`** - Project name (used for `pip install`)
-- **`dependencies`** - Required packages installed automatically
+- **`dependencies`** - Required packages, installed automatically
 - **`[tool.setuptools.packages.find]`** - Tells setuptools to find packages in `src/`
 
 For CLI packages, add a `[project.scripts]` section:
