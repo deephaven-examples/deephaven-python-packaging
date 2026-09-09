@@ -176,8 +176,8 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 
 ```bash
 # As CLI commands
-my-dh-query data.csv --verbose
-my-dh-process data/ --output results/ --verbose
+my-dh-toolkit-query data.csv --verbose
+my-dh-toolkit-process data/ --output results/ --verbose
 ```
 
 **Use when:**
@@ -214,7 +214,7 @@ name = "my_dh_library"
 version = "0.1.0"
 description = "Reusable Deephaven query functions"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "deephaven-server>=0.35.0",
 ]
@@ -342,7 +342,7 @@ name = "my_dh_cli"
 version = "0.1.0"
 description = "Command-line tool for data processing"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "deephaven-server>=0.35.0",
   "click>=8.0.0",
@@ -453,15 +453,15 @@ name = "my_dh_toolkit"
 version = "0.1.0"
 description = "Deephaven library and CLI tools"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "deephaven-server>=0.35.0",
   "click>=8.0.0",
 ]
 
 [project.scripts]
-my-dh-query = "my_dh_toolkit.cli:app"
-my-dh-process = "my_dh_toolkit.processor:process"
+my-dh-toolkit-query = "my_dh_toolkit.cli:app"
+my-dh-toolkit-process = "my_dh_toolkit.processor:process"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -589,7 +589,7 @@ name = "my_dh_library"
 version = "0.1.0"
 description = "Reusable Deephaven query functions"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "deephaven-server>=0.35.0",
 ]

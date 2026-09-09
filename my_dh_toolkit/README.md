@@ -32,20 +32,20 @@ from my_dh_toolkit.queries import filter_by_threshold, add_computed_columns
 from my_dh_toolkit import my_dh_query, batch_process
 from deephaven import read_csv
 
-data = read_csv("data/sample.csv")
+data = read_csv("../data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 
 # Or use the exported functions
-result = my_dh_query("data/sample.csv", verbose=True)
+result = my_dh_query("../data/sample.csv", verbose=True)
 ```
 
 ## Usage as CLI Commands
 
-Run the installed commands directly from a terminal. Both `my-dh-query` and `my-dh-process` start their own Deephaven server:
+Run the installed commands directly from a terminal. Both `my-dh-toolkit-query` and `my-dh-toolkit-process` start their own Deephaven server:
 
 ```shell
-my-dh-query data/sample.csv --verbose
-my-dh-process data/batch --output ./output --verbose
+my-dh-toolkit-query ../data/sample.csv --verbose
+my-dh-toolkit-process ../data/batch --output ./output --verbose
 ```
 
 The underlying functions are also importable, so you can call them directly within a Python session that already has a server running:
@@ -58,13 +58,13 @@ server.start()
 
 # Call the underlying functions directly
 from my_dh_toolkit import my_dh_query, batch_process
-result = my_dh_query("data/sample.csv", verbose=True)
-batch_process("data/batch/", "./output", verbose=True)
+result = my_dh_query("../data/sample.csv", verbose=True)
+batch_process("../data/batch/", "./output", verbose=True)
 ```
 
 ## Commands
 
-### my-dh-query
+### my-dh-toolkit-query
 
 Process a single CSV file with Deephaven.
 
@@ -74,7 +74,7 @@ Process a single CSV file with Deephaven.
 **Options:**
 - `--verbose, -v` - Enable verbose output
 
-### my-dh-process
+### my-dh-toolkit-process
 
 Batch process multiple CSV files from a directory.
 
@@ -105,6 +105,6 @@ Batch process multiple CSV files from a directory.
 
 ## Requirements
 
-- Python 3.8 or later
+- Python 3.9 or later
 - Deephaven Server 0.35.0 or later
 - Click 8.0.0 or later

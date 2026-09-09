@@ -1,5 +1,7 @@
 """Utility functions for working with Deephaven tables."""
 
+from __future__ import annotations
+
 from deephaven.table import Table
 
 

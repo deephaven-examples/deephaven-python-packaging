@@ -19,7 +19,7 @@ pip install -e .
 Run the installed command directly from a terminal. `my-dh-query` starts its own Deephaven server, so no separate session setup is needed:
 
 ```shell
-my-dh-query data/sample.csv --verbose
+my-dh-query ../data/sample.csv --verbose
 ```
 
 The underlying `my_dh_query()` function is also importable, so you can call it directly within a Python session that already has a server running:
@@ -32,7 +32,7 @@ server.start()
 
 # Call the underlying function directly
 from my_dh_cli.cli import my_dh_query
-result = my_dh_query("data/sample.csv", verbose=True)
+result = my_dh_query("../data/sample.csv", verbose=True)
 print(f"Processed {result.size} rows")
 ```
 
@@ -50,6 +50,6 @@ Process a CSV file with Deephaven.
 
 ## Requirements
 
-- Python 3.8 or later
+- Python 3.9 or later
 - Deephaven Server 0.35.0 or later
 - Click 8.0.0 or later

@@ -15,7 +15,7 @@ This example accompanies the [Packaging custom code and dependencies](https://de
 
 ## Prerequisites
 
-- Python 3.8 or later
+- Python 3.9 or later
 - pip (Python package installer)
 - Basic familiarity with Python packaging
 
@@ -89,8 +89,8 @@ from my_dh_toolkit.queries import filter_by_threshold
 
 ```shell
 # As CLI commands
-my-dh-query input_data.csv --verbose
-my-dh-process data/ --output results/ --verbose
+my-dh-toolkit-query input_data.csv --verbose
+my-dh-toolkit-process data/ --output results/ --verbose
 ```
 
 ## Quick start
@@ -152,13 +152,13 @@ print(f"Processed {result.size} rows")
 
 ### Try the combined package
 
-Install the package, then run the installed commands directly from a terminal. Both `my-dh-query` and `my-dh-process` start their own Deephaven server:
+Install the package, then run the installed commands directly from a terminal. Both `my-dh-toolkit-query` and `my-dh-toolkit-process` start their own Deephaven server:
 
 ```shell
 cd my_dh_toolkit
 pip install -e .
-my-dh-query ../data/sample.csv --verbose
-my-dh-process ../data/batch --output ./output --verbose
+my-dh-toolkit-query ../data/sample.csv --verbose
+my-dh-toolkit-process ../data/batch --output ./output --verbose
 ```
 
 The library functions are also importable for use within a Python session that already has a server running:
@@ -338,7 +338,7 @@ python -m my_package
 ### Import errors
 
 - Verify all dependencies are installed: `pip list`
-- Check that you're using Python 3.8 or later
+- Check that you're using Python 3.9 or later
 - Ensure Deephaven is installed: `pip install deephaven-server`
 
 ### Module not found errors

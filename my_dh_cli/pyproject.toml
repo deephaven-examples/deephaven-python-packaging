@@ -7,7 +7,7 @@ name = "my_dh_cli"
 version = "0.1.0"
 description = "Command-line tool for data processing"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "deephaven-server>=0.35.0",
   "click>=8.0.0",
