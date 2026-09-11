@@ -32,7 +32,7 @@ The repository contains three example packages:
 
 ## Package structure
 
-Modern Python packages use the **src-layout**, the structure [recommended by the Python Packaging Authority](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/). This layout keeps source code separate from tests and configuration files:
+The example packages in this guide use the **src-layout** described in the Python Packaging Authority's [src layout vs flat layout discussion](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/). This layout keeps source code separate from tests and configuration files:
 
 ```
 my_dh_project/
@@ -178,7 +178,7 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 ```bash
 # As CLI commands
 my-dh-toolkit-query data.csv --verbose
-my-dh-toolkit-process data/ --output results/ --verbose
+my-dh-toolkit-process data/batch/ --output results/ --verbose
 ```
 
 **Use when:**
@@ -750,7 +750,7 @@ This creates a `.whl` file in `dist/` that can be:
 
 ### Package structure
 
-- Use the src-layout for all packages
+- Prefer the src-layout for packages like these examples
 - Keep package names lowercase with underscores
 - Match the package directory name to the import name
 - Include `__init__.py` in all package directories
@@ -794,7 +794,8 @@ The repository also provides shared sample data in its `data/` directory for try
 
 - [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/)
 - [Use the Deephaven Python package](https://deephaven.io/core/docs/how-to-guides/deephaven-python-package/)
-- [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
+- [Writing your `pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
+- [src layout vs flat layout](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/)
 - [Creating and packaging command-line tools](https://packaging.python.org/en/latest/guides/creating-command-line-tools/)
 - [Setuptools documentation](https://setuptools.pypa.io/)
 - [Click documentation](https://click.palletsprojects.com/)
