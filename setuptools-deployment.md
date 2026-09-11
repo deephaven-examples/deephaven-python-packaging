@@ -790,6 +790,6 @@ The repository also provides shared sample data in its `data/` directory for try
 - [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/)
 - [Use the Deephaven Python package](https://deephaven.io/core/docs/how-to-guides/deephaven-python-package/)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
-- [Creating command line tools](https://packaging.python.org/en/latest/guides/creating-command line-tools/)
+- [Creating and packaging command-line tools](https://packaging.python.org/en/latest/guides/creating-command-line-tools/)
 - [Setuptools documentation](https://setuptools.pypa.io/)
 - [Click documentation](https://click.palletsprojects.com/)
