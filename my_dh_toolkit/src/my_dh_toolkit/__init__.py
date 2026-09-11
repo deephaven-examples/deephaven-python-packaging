@@ -1,8 +1,9 @@
-"""My Deephaven package for data processing."""
+"""My Deephaven package for data processing.
+
+This __init__ deliberately imports nothing that requires Deephaven: the CLI
+entry points import this package before a Deephaven server is running, so the
+package must be importable without one. The library API lives in the
+`my_dh_toolkit.queries` and `my_dh_toolkit.utils` submodules.
+"""
 
 __version__ = "0.1.0"
-
-from my_dh_toolkit.cli import my_dh_query
-from my_dh_toolkit.processor import batch_process
-
-__all__ = ["my_dh_query", "batch_process"]

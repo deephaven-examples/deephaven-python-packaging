@@ -1,55 +1,57 @@
 # My Deephaven Library
 
-A library-only package providing reusable Deephaven query functions. This package contains no CLI tools - it's designed to be imported and used as a library in other Python projects.
+An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command-line tools — this package is only ever imported.
 
 ## Installation
 
+From the repository root:
+
 ```shell
-pip install .
+pip install ./my_dh_library
 ```
 
 Or in editable mode for development:
 
 ```shell
-pip install -e .
+pip install -e ./my_dh_library
 ```
 
 ## Usage
 
 > [!NOTE]
-> All Deephaven functionality requires a running server. Start the server before importing Deephaven modules.
+> All Deephaven functionality requires a running server in the same Python process. Start the server before importing `deephaven` modules.
 
-Import and use the library functions in your Python code:
+From the repository root, start Python and use the library:
 
 ```python
-# Start the Deephaven server
+# A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
-server.start()
+Server(port=10000, jvm_args=["-Xmx4g"]).start()
 
-# Now use the library functions
+# Import and use the installed library.
 from my_dh_library.queries import filter_by_threshold, add_computed_columns
 from deephaven import read_csv
 
-data = read_csv("../data/sample.csv")
+data = read_csv("data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
 
-## Available Functions
+## Available functions
 
-### Query Functions (`my_dh_library.queries`)
+### Query functions (`my_dh_library.queries`)
 
-- `filter_by_threshold(table, column, threshold)` - Filter table rows where column value exceeds threshold
-- `add_computed_columns(table)` - Add commonly used computed columns to a table
-- `summarize_by_group(table, group_col, value_col)` - Create summary statistics grouped by a column
+- `filter_by_threshold(table, column, threshold)` - Filter table rows where the column value exceeds the threshold.
+- `add_computed_columns(table)` - Add commonly used computed columns to a table.
+- `summarize_by_group(table, group_col, value_col)` - Create summary statistics grouped by a column.
 
-### Utility Functions (`my_dh_library.utils`)
+### Utility functions (`my_dh_library.utils`)
 
-- `validate_columns(table, required_columns)` - Check if table has all required columns
-- `get_table_info(table)` - Get basic information about a table
+- `validate_columns(table, required_columns)` - Check if a table has all required columns.
+- `get_table_info(table)` - Get basic information about a table.
 
 ## Requirements
 
 - Python 3.9 or later
+- Java 17 or later
 - Deephaven Server 0.35.0 or later

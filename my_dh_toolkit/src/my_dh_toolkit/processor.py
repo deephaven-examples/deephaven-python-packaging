@@ -30,7 +30,10 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
         if verbose:
             click.echo(f"Processing {csv_file.name}...")
 
-        table = read_csv(str(csv_file))
+        try:
+            table = read_csv(str(csv_file))
+        except Exception as e:
+            raise click.ClickException(f"Failed to read CSV file '{csv_file}': {e}")
         
         column_names = [col.name for col in table.columns]
         if "Score" not in column_names:

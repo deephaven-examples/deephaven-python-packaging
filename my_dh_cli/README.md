@@ -1,55 +1,61 @@
 # My Deephaven CLI
 
-A CLI-only package providing command-line tools for data processing with Deephaven. This package is designed to be installed and run as a command-line tool.
+An example of packaging a Deephaven script as a command-line tool. Installing this package creates one terminal command, `my-dh-query`. No library code is exposed — users of this package never write Python.
+
+The command is defined by the `[project.scripts]` entry point in [`pyproject.toml`](pyproject.toml):
+
+```toml
+[project.scripts]
+my-dh-query = "my_dh_cli.cli:app"
+```
 
 ## Installation
 
+From the repository root:
+
 ```shell
-pip install .
+pip install ./my_dh_cli
 ```
 
 Or in editable mode for development:
 
 ```shell
-pip install -e .
+pip install -e ./my_dh_cli
 ```
 
 ## Usage
 
-Run the installed command directly from a terminal. `my-dh-query` starts its own Deephaven server, so no separate session setup is needed:
+Run the installed command on a CSV file. The command starts its own Deephaven server, so no separate setup is needed:
 
 ```shell
-my-dh-query ../data/sample.csv --verbose
+my-dh-query data/sample.csv --verbose
 ```
 
-The underlying `my_dh_query()` function is also importable, so you can call it directly within a Python session that already has a server running:
+It reads the file, adds a `DoubleScore` computed column, and reports the number of rows processed.
 
-```python
-# Start the Deephaven server
-from deephaven_server import Server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
-server.start()
+During development, the package also runs without an entry point via [`__main__.py`](src/my_dh_cli/__main__.py):
 
-# Call the underlying function directly
-from my_dh_cli.cli import my_dh_query
-result = my_dh_query("../data/sample.csv", verbose=True)
-print(f"Processed {result.size} rows")
+```shell
+python -m my_dh_cli data/sample.csv --verbose
 ```
 
-## Commands
+## Command reference
 
 ### my-dh-query
 
-Process a CSV file with Deephaven.
+Process a CSV file with Deephaven. The file must contain a `Score` column.
 
 **Arguments:**
-- `input_file` - Path to the CSV file to process
+
+- `input_file` - Path to the CSV file to process.
 
 **Options:**
-- `--verbose, -v` - Enable verbose output
+
+- `--verbose, -v` - Enable verbose output.
 
 ## Requirements
 
 - Python 3.9 or later
+- Java 17 or later
 - Deephaven Server 0.35.0 or later
 - Click 8.0.0 or later

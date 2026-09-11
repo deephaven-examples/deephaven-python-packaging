@@ -80,7 +80,7 @@ data = read_csv("data.csv")
 
 ## Packaging scenarios
 
-Different projects have different needs. The example repository demonstrates three common scenarios:
+Different projects have different needs. The example repository demonstrates three common scenarios. The Python usage snippets below assume a running Deephaven server, as shown in [Server initialization](#server-initialization).
 
 ### Library-only package
 
@@ -169,6 +169,7 @@ my_dh_toolkit/
 ```python
 # As a library
 from my_dh_toolkit.queries import filter_by_threshold
+from deephaven import read_csv
 
 data = read_csv("data.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
@@ -470,14 +471,15 @@ where = ["src"]
 Create `src/my_dh_toolkit/__init__.py`:
 
 ```python
-"""My Deephaven package for data processing."""
+"""My Deephaven package for data processing.
+
+This __init__ deliberately imports nothing that requires Deephaven: the CLI
+entry points import this package before a Deephaven server is running, so the
+package must be importable without one. The library API lives in the
+`my_dh_toolkit.queries` and `my_dh_toolkit.utils` submodules.
+"""
 
 __version__ = "0.1.0"
-
-from my_dh_toolkit.cli import my_dh_query
-from my_dh_toolkit.processor import batch_process
-
-__all__ = ["my_dh_query", "batch_process"]
 ```
 
 Create `src/my_dh_toolkit/__main__.py`:
@@ -528,7 +530,10 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
         if verbose:
             click.echo(f"Processing {csv_file.name}...")
 
-        table = read_csv(str(csv_file))
+        try:
+            table = read_csv(str(csv_file))
+        except Exception as e:
+            raise click.ClickException(f"Failed to read CSV file '{csv_file}': {e}")
 
         column_names = [col.name for col in table.columns]
         if "Score" not in column_names:
@@ -706,18 +711,7 @@ Entry-point commands like `my-dh-query` start their own Deephaven server, so the
 my-dh-query data.csv --verbose
 ```
 
-The underlying function is also importable, so you can call it directly within a Python session that already has a server running:
-
-```python
-# Start the Deephaven server
-from deephaven_server import Server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
-server.start()
-
-# Call the underlying function directly
-from my_dh_cli.cli import my_dh_query
-result = my_dh_query("data.csv", verbose=True)
-```
+For programmatic use, install a library package (or the combined package) and import its functions as shown in [Use a library package](#use-a-library-package).
 
 ## Building and distributing
 
