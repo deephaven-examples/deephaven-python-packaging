@@ -1,6 +1,6 @@
 # My Deephaven Library
 
-An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command-line tools — this package is only ever imported.
+An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command line tools — this package is only ever imported.
 
 ## Installation
 

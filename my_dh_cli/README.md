@@ -1,6 +1,6 @@
 # My Deephaven CLI
 
-An example of packaging a Deephaven script as a command-line tool. Installing this package creates one terminal command, `my-dh-query`. No library code is exposed — users of this package never write Python.
+An example of packaging a Deephaven script as a command line tool. Installing this package creates one terminal command, `my-dh-query`. No library code is exposed — users of this package never write Python.
 
 The command is defined by the `[project.scripts]` entry point in [`pyproject.toml`](pyproject.toml):
 

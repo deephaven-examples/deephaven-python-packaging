@@ -3,7 +3,7 @@
 An example of one package with two interfaces:
 
 - **A library** — importable query functions, matching the [`my_dh_library`](../my_dh_library/) example.
-- **Command-line tools** — two terminal commands, following the same pattern as the [`my_dh_cli`](../my_dh_cli/) example.
+- **Command line tools** — two terminal commands, following the same pattern as the [`my_dh_cli`](../my_dh_cli/) example.
 
 The commands are defined by the `[project.scripts]` entry points in [`pyproject.toml`](pyproject.toml):
 
@@ -27,7 +27,7 @@ Or in editable mode for development:
 pip install -e ./my_dh_toolkit
 ```
 
-## Usage as command-line tools
+## Usage as command line tools
 
 Run the installed commands on the sample data. Each command starts its own Deephaven server, so no separate setup is needed:
 

@@ -5,8 +5,8 @@ This repository shows how to package Python code that uses [Deephaven Community 
 | Example | Pattern | Installing it provides |
 |---|---|---|
 | [`my_dh_library/`](my_dh_library/) | Library only | Functions to import in Python code |
-| [`my_dh_cli/`](my_dh_cli/) | Command-line tool only | A `my-dh-query` terminal command |
-| [`my_dh_toolkit/`](my_dh_toolkit/) | Library and command-line tools combined | Importable functions plus `my-dh-toolkit-query` and `my-dh-toolkit-process` commands |
+| [`my_dh_cli/`](my_dh_cli/) | Command line tool only | A `my-dh-query` terminal command |
+| [`my_dh_toolkit/`](my_dh_toolkit/) | Library and command line tools combined | Importable functions plus `my-dh-toolkit-query` and `my-dh-toolkit-process` commands |
 
 `my_dh_toolkit` is the other two patterns merged into a single package: its library modules play the same role as `my_dh_library`, and its commands play the same role as `my_dh_cli`.
 
@@ -14,7 +14,7 @@ All three examples follow the [Python Packaging User Guide](https://packaging.py
 
 ## Choose an example
 
-- Start from **`my_dh_library`** to share reusable functions that other projects import. There is no command-line interface.
+- Start from **`my_dh_library`** to share reusable functions that other projects import. There is no command line interface.
 - Start from **`my_dh_cli`** to ship a tool that users run from a terminal. No library code is exposed.
 - Start from **`my_dh_toolkit`** to provide both: importable functions for Python users and commands for terminal users.
 
@@ -32,6 +32,13 @@ Clone the repository and work from its root directory. All commands below are ru
 git clone https://github.com/deephaven-examples/deephaven-python-packaging.git
 cd deephaven-python-packaging
 ```
+
+## Sample data
+
+The examples read the CSV files in the `data/` directory:
+
+- `data/sample.csv` — a single 10-row file with `Name`, `Score`, `Value`, and `Category` columns. It is the input for the single-file examples: the library snippets, `my-dh-query`, and `my-dh-toolkit-query`.
+- `data/batch/` — three smaller files (`file1.csv`, `file2.csv`, and `file3.csv`) with the same columns but different rows. It is the input for `my-dh-toolkit-process`, which processes every CSV file in a directory.
 
 ## Example 1: `my_dh_library` — a library
 
@@ -81,7 +88,7 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 - [`queries.py`](my_dh_library/src/my_dh_library/queries.py) — plain functions that take and return Deephaven tables.
 - [`__init__.py`](my_dh_library/src/my_dh_library/__init__.py) — re-exports the public functions.
 
-## Example 2: `my_dh_cli` — a command-line tool
+## Example 2: `my_dh_cli` — a command line tool
 
 **The story:** package a Deephaven script as a terminal command. `pip install` creates a `my-dh-query` command that users run without writing any Python.
 
@@ -120,27 +127,27 @@ The command starts its own Deephaven server, reads the CSV file, adds a computed
 - [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py) — a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool.
 - [`__main__.py`](my_dh_cli/src/my_dh_cli/__main__.py) — allows `python -m my_dh_cli data/sample.csv` as an alternative during development.
 
-## Example 3: `my_dh_toolkit` — a library and commands in one package
+## Example 3: `my_dh_toolkit` — a library and command line tools in one package
 
-**The story:** one package, two interfaces. Terminal users get commands; Python users import functions. The library modules (`queries.py`, `utils.py`) match `my_dh_library`, and the command modules (`cli.py`, `processor.py`) follow the same pattern as `my_dh_cli`.
+**The story:** one package that provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The library modules reuse the `my_dh_library` code, and the command modules reuse the `my_dh_cli` code plus a second command that shows one package installing multiple commands.
 
 ```
 my_dh_toolkit/
 ├── src/
 │   └── my_dh_toolkit/
-│       ├── __init__.py     # Kept minimal — see "What to study" below
+│       ├── __init__.py     # Intentionally contains no imports — see "What to study"
 │       ├── __main__.py
-│       ├── cli.py          # my-dh-toolkit-query command
-│       ├── processor.py    # my-dh-toolkit-process command
-│       ├── queries.py      # Library: query functions
-│       └── utils.py        # Library: table validation helpers
-├── pyproject.toml          # Declares two entry points
+│       ├── cli.py          # Implements my-dh-toolkit-query (same code as my_dh_cli)
+│       ├── processor.py    # Implements my-dh-toolkit-process
+│       ├── queries.py      # Library query functions (same code as my_dh_library)
+│       └── utils.py        # Library table helpers (same code as my_dh_library)
+├── pyproject.toml          # Declares both commands
 └── README.md
 ```
 
 ### Try the commands
 
-Install the package, then run the two commands:
+Install the package, then run each command:
 
 ```shell
 pip install -e ./my_dh_toolkit
@@ -148,11 +155,11 @@ my-dh-toolkit-query data/sample.csv --verbose
 my-dh-toolkit-process data/batch --output output --verbose
 ```
 
-`my-dh-toolkit-query` processes a single CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes the results to the output directory. Both start their own Deephaven server.
+`my-dh-toolkit-query` processes one CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes one result file per input to the output directory. Like `my-dh-query` in the previous example, each command starts its own Deephaven server.
 
 ### Try the library
 
-The same installed package is importable. As with any Deephaven library, start a server first:
+The same installation also provides the library. In a Python session, start a Deephaven server, then import and use the query functions:
 
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
@@ -170,15 +177,8 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 ### What to study
 
-- [`pyproject.toml`](my_dh_toolkit/pyproject.toml) — `[project.scripts]` defines multiple commands for one package.
-- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py) — deliberately imports nothing that requires Deephaven. The entry-point commands import the package before a server is running, so the library API stays in the `queries` and `utils` submodules, and the command modules defer their `deephaven` imports until after the server starts. This is the key structural difference from a library-only package.
-
-## Sample data
-
-The `data/` directory holds the inputs used by the examples above:
-
-- `data/sample.csv` — one 10-row file with `Name`, `Score`, `Value`, and `Category` columns. Input for the library snippets, `my-dh-query`, and `my-dh-toolkit-query`.
-- `data/batch/file1.csv`, `file2.csv`, `file3.csv` — three separate files with the same columns but different rows. Input for `my-dh-toolkit-process`, which processes every CSV file in the directory.
+- [`pyproject.toml`](my_dh_toolkit/pyproject.toml) — a single `[project.scripts]` section defines both commands.
+- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py) — contains no imports, and that is deliberate. Importing any `deephaven` module fails unless a Deephaven server is already running in the process. When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, that import chain would reach `deephaven` and every command would fail at startup. Keeping `__init__.py` empty and importing the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`) avoids the problem. `my_dh_library` can safely re-export its functions from `__init__.py` because it has no commands: it is only ever imported after a server is running.
 
 ## Adapt an example for your own project
 

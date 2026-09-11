@@ -9,6 +9,7 @@ description = "Reusable Deephaven query functions"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
   "deephaven-server>=0.35.0",
 ]
 

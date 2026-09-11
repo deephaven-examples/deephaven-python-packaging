@@ -3,12 +3,12 @@ title: Packaging custom code and dependencies
 sidebar_label: Python packaging
 ---
 
-[Python packaging](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) enables you to create distributable packages containing custom code, command-line tools, and managed dependencies. Deephaven's pip-installable packages integrate seamlessly with modern Python packaging tools, allowing you to build reusable libraries and executable scripts that leverage Deephaven's query engine. This guide walks through the concepts and patterns for packaging Deephaven-based Python projects.
+[Python packaging](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) enables you to create distributable packages containing custom code, command line tools, and managed dependencies. Deephaven's pip-installable packages integrate seamlessly with modern Python packaging tools, allowing you to build reusable libraries and executable scripts that leverage Deephaven's query engine. This guide walks through the concepts and patterns for packaging Deephaven-based Python projects.
 
 Python packaging with [`pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) provides:
 
 - **Reusable libraries** - Package query functions and utilities for import by other projects.
-- **Command-line tools** - Build executable scripts with entry point definitions.
+- **Command line tools** - Build executable scripts with entry point definitions.
 - **Dependency management** - Automatically install Deephaven and required packages.
 - **Distribution** - Share code as wheel archives via PyPI or direct distribution.
 - **Version control** - Specify compatible dependency versions for reproducible installations.
@@ -27,12 +27,12 @@ cd deephaven-python-packaging
 The repository contains three example packages:
 
 - `my_dh_library/` - Library-only package with reusable query functions.
-- `my_dh_cli/` - CLI-only package with command-line tools.
+- `my_dh_cli/` - CLI-only package with command line tools.
 - `my_dh_toolkit/` - Combined package with both library and CLI functionality.
 
 ## Package structure
 
-Modern Python packages use the **src-layout**, which is the recommended structure by the [Python Packaging Authority](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/). This layout keeps source code separate from tests and configuration files:
+Modern Python packages use the **src-layout**, the structure [recommended by the Python Packaging Authority](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/). This layout keeps source code separate from tests and configuration files:
 
 ```
 my_dh_project/
@@ -76,7 +76,7 @@ data = read_csv("data.csv")
 - Each Python process has its own JVM.
 - Starting a server in one terminal doesn't help another terminal.
 - Entry-point CLI commands should start their own server internally (see [Use CLI functions](#use-cli-functions)) so they work standalone; only functions imported directly need an already-running session.
-- The server uses approximately 4GB of memory by default (configurable via `jvm_args`).
+- The examples size the JVM to 4 GB with `jvm_args=["-Xmx4g"]`; adjust this value to fit the workload.
 
 ## Packaging scenarios
 
@@ -112,12 +112,12 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 **Use when:**
 
 - Creating reusable utilities for other projects.
-- You don't need a command-line interface.
+- You don't need a command line interface.
 - Code will be imported, not executed directly.
 
 ### CLI-only package
 
-Package executable command-line tools without exposing library code.
+Package executable command line tools without exposing library code.
 
 **Structure:**
 
@@ -140,13 +140,13 @@ my-dh-query data.csv --verbose
 
 **Use when:**
 
-- Building command-line tools for data processing
+- Building command line tools for data processing
 - You need clean function interfaces
 - You don't need to expose library code to other projects
 
 ### Combined package
 
-Package both reusable library code and command-line tools.
+Package both reusable library code and command line tools.
 
 **Structure:**
 
@@ -217,6 +217,7 @@ description = "Reusable Deephaven query functions"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
   "deephaven-server>=0.35.0",
 ]
 
@@ -240,6 +241,8 @@ Create `src/my_dh_library/utils.py`:
 
 ```python
 """Utility functions for working with Deephaven tables."""
+
+from __future__ import annotations
 
 from deephaven.table import Table
 
@@ -341,11 +344,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "my_dh_cli"
 version = "0.1.0"
-description = "Command-line tool for data processing"
+description = "Command line tool for data processing"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
   "deephaven-server>=0.35.0",
+  # click implements the command line interface.
   "click>=8.0.0",
 ]
 
@@ -456,7 +461,9 @@ description = "Deephaven library and CLI tools"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
   "deephaven-server>=0.35.0",
+  # click implements the command line interfaces.
   "click>=8.0.0",
 ]
 
@@ -481,6 +488,8 @@ package must be importable without one. The library API lives in the
 
 __version__ = "0.1.0"
 ```
+
+The empty `__init__.py` is the key structural difference from a library-only package: if it imported the query functions, the import chain would reach `deephaven` and both commands would fail before they could start their server.
 
 Create `src/my_dh_toolkit/__main__.py`:
 
@@ -596,6 +605,7 @@ description = "Reusable Deephaven query functions"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
   "deephaven-server>=0.35.0",
 ]
 
@@ -618,7 +628,7 @@ For CLI packages, add a `[project.scripts]` section:
 my-dh-query = "my_dh_cli.cli:app"
 ```
 
-This creates a command-line entry point that calls the `app` function from `my_dh_cli.cli`.
+This creates a command line entry point that calls the `app` function from `my_dh_cli.cli`.
 
 ## Managing dependencies
 
@@ -632,6 +642,8 @@ dependencies = [
   "pandas>=2.0.0",
 ]
 ```
+
+Declaring `deephaven-server` is sufficient for Deephaven: it depends on a matching version of `deephaven-core`, which provides the `deephaven` module that packages import.
 
 ### Version constraints
 
@@ -737,6 +749,7 @@ This creates a `.whl` file in `dist/` that can be:
 - Keep package names lowercase with underscores
 - Match the package directory name to the import name
 - Include `__init__.py` in all package directories
+- In packages that define entry-point commands, keep `__init__.py` free of imports that require a running Deephaven server
 
 ### Dependencies
 
@@ -767,15 +780,16 @@ Each example includes:
 
 - Complete source code
 - Configured `pyproject.toml`
-- Sample data files
 - Comprehensive README
 - Usage examples
+
+The repository also provides shared sample data in its `data/` directory for trying the examples.
 
 ## Related documentation
 
 - [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/)
 - [Use the Deephaven Python package](https://deephaven.io/core/docs/how-to-guides/deephaven-python-package/)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
-- [Creating command-line tools](https://packaging.python.org/en/latest/guides/creating-command-line-tools/)
+- [Creating command line tools](https://packaging.python.org/en/latest/guides/creating-command line-tools/)
 - [Setuptools documentation](https://setuptools.pypa.io/)
 - [Click documentation](https://click.palletsprojects.com/)
