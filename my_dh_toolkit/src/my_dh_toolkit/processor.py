@@ -4,8 +4,6 @@ from pathlib import Path
 
 def batch_process(directory: str, output_dir: str, verbose: bool = False) -> None:
     """Process multiple CSV files from a directory."""
-    from deephaven import read_csv, write_csv
-    
     input_path = Path(directory)
     output_path = Path(output_dir)
     
@@ -20,6 +18,13 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
         raise click.ClickException(f"Permission denied: Cannot create output directory '{output_path}'")
     except OSError as e:
         raise click.ClickException(f"Failed to create output directory '{output_path}': {e}")
+
+    if input_path.resolve() == output_path.resolve():
+        raise click.ClickException(
+            f"Input and output directories must be different: '{input_path}'"
+        )
+
+    from deephaven import read_csv, write_csv
 
     csv_files = list(input_path.glob("*.csv"))
 
