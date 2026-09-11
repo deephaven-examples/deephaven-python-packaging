@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_toolkit"
+version = "0.1.0"
+description = "Deephaven library and CLI tools"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+  # click implements the command line interfaces.
+  "click>=8.0.0",
+]
+
+[project.scripts]
+my-dh-toolkit-query = "my_dh_toolkit.cli:app"
+my-dh-toolkit-process = "my_dh_toolkit.processor:process"
+
+[tool.setuptools.packages.find]
+where = ["src"]

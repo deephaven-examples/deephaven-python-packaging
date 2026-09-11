@@ -1,0 +1,801 @@
+---
+title: Packaging custom code and dependencies
+sidebar_label: Python packaging
+---
+
+[Python packaging](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) enables you to create distributable packages containing custom code, command line tools, and managed dependencies. Deephaven's pip-installable packages integrate seamlessly with modern Python packaging tools, allowing you to build reusable libraries and executable scripts that leverage Deephaven's query engine. This guide walks through the concepts and patterns for packaging Deephaven-based Python projects.
+
+Python packaging with [`pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) provides:
+
+- **Reusable libraries** - Package query functions and utilities for import by other projects.
+- **Command line tools** - Build executable scripts with entry point definitions.
+- **Dependency management** - Automatically install Deephaven and required packages.
+- **Distribution** - Share code as wheel archives via PyPI or direct distribution.
+- **Version control** - Specify compatible dependency versions for reproducible installations.
+
+## Example repository
+
+The examples in this guide use the [deephaven-python-packaging](https://github.com/deephaven-examples/deephaven-python-packaging) repository. It demonstrates three complete packaging scenarios with working code, sample data, and comprehensive documentation.
+
+To explore the examples, clone the repository:
+
+```bash
+git clone https://github.com/deephaven-examples/deephaven-python-packaging.git
+cd deephaven-python-packaging
+```
+
+The repository contains three example packages:
+
+- `my_dh_library/` - Library-only package with reusable query functions.
+- `my_dh_cli/` - CLI-only package with command line tools.
+- `my_dh_toolkit/` - Combined package with both library and CLI functionality.
+
+## Package structure
+
+The example packages in this guide use the **src-layout** described in the Python Packaging Authority's [src layout vs flat layout discussion](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/). This layout keeps source code separate from tests and configuration files:
+
+```
+my_dh_project/
+├── src/
+│   └── my_dh_package/
+│       ├── __init__.py
+│       ├── queries.py
+│       └── utils.py
+├── pyproject.toml
+└── README.md
+```
+
+### Key components
+
+- **`src/`** - Source directory containing the package code.
+- **`my_dh_package/`** - The Python package (directory name used in imports).
+- **`__init__.py`** - Makes the directory importable and can export public API.
+- **`pyproject.toml`** - Defines package metadata, dependencies, and entry points.
+- **Module files** - Python files containing your functions and classes.
+
+The package name under `src/` determines how users import your code. For example, with `src/my_dh_library/`, users import via `from my_dh_library import ...`.
+
+## Server initialization
+
+Deephaven requires a running server before using any Deephaven functionality. The server must be initialized in the same Python process that uses Deephaven:
+
+```python
+from deephaven_server import Server
+
+# Initialize and start the server
+server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
+
+# Now you can import and use Deephaven
+from deephaven import read_csv
+data = read_csv("data.csv")
+```
+
+### Key points
+
+- Each Python process has its own JVM.
+- Starting a server in one terminal doesn't help another terminal.
+- Entry-point CLI commands should start their own server internally (see [Use CLI functions](#use-cli-functions)) so they work standalone; only functions imported directly need an already-running session.
+- The examples size the JVM to 4 GB with `jvm_args=["-Xmx4g"]`; adjust this value to fit the workload.
+
+## Packaging scenarios
+
+Different projects have different needs. The example repository demonstrates three common scenarios. The Python usage snippets below assume a running Deephaven server, as shown in [Server initialization](#server-initialization).
+
+### Library-only package
+
+Package reusable code without CLI tools. Other projects import your modules.
+
+**Structure:**
+
+```
+my_dh_library/
+├── src/
+│   └── my_dh_library/
+│       ├── __init__.py
+│       ├── queries.py
+│       └── utils.py
+├── pyproject.toml
+└── README.md
+```
+
+**Usage:**
+
+```python
+from my_dh_library.queries import filter_by_threshold, add_computed_columns
+from deephaven import read_csv
+
+data = read_csv("data.csv")
+filtered = filter_by_threshold(data, "Score", 75.0)
+```
+
+**Use when:**
+
+- Creating reusable utilities for other projects.
+- You don't need a command line interface.
+- Code will be imported, not executed directly.
+
+### CLI-only package
+
+Package executable command line tools without exposing library code.
+
+**Structure:**
+
+```
+my_dh_cli/
+├── src/
+│   └── my_dh_cli/
+│       ├── __init__.py
+│       ├── __main__.py
+│       └── cli.py
+├── pyproject.toml
+└── README.md
+```
+
+**Usage:**
+
+```bash
+my-dh-query data.csv --verbose
+```
+
+**Use when:**
+
+- Building command line tools for data processing
+- You need clean function interfaces
+- You don't need to expose library code to other projects
+
+### Combined package
+
+Package both reusable library code and command line tools.
+
+**Structure:**
+
+```
+my_dh_toolkit/
+├── src/
+│   └── my_dh_toolkit/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── cli.py
+│       ├── processor.py
+│       ├── queries.py
+│       └── utils.py
+├── pyproject.toml
+└── README.md
+```
+
+**Usage:**
+
+```python
+# As a library
+from my_dh_toolkit.queries import filter_by_threshold
+from deephaven import read_csv
+
+data = read_csv("data.csv")
+filtered = filter_by_threshold(data, "Score", 75.0)
+```
+
+```bash
+# As CLI commands
+my-dh-toolkit-query data.csv --verbose
+my-dh-toolkit-process data/batch/ --output results/ --verbose
+```
+
+**Use when:**
+
+- You need both library and CLI functionality
+- You want to provide multiple interfaces to the same code
+- Library functions are useful independently
+
+## Create a new package
+
+<details>
+<summary>Step-by-step instructions for creating packages from scratch</summary>
+
+This section walks through creating each type of package from scratch.
+
+### Create a library-only package
+
+Create the directory structure:
+
+```bash
+mkdir -p my_dh_library/src/my_dh_library
+cd my_dh_library
+```
+
+Create `pyproject.toml`:
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_library"
+version = "0.1.0"
+description = "Reusable Deephaven query functions"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+Create `src/my_dh_library/__init__.py`:
+
+```python
+"""My Deephaven package for data processing."""
+
+__version__ = "0.1.0"
+
+from my_dh_library.queries import filter_by_threshold, add_computed_columns, summarize_by_group
+
+__all__ = ["filter_by_threshold", "add_computed_columns", "summarize_by_group"]
+```
+
+Create `src/my_dh_library/utils.py`:
+
+```python
+"""Utility functions for working with Deephaven tables."""
+
+from __future__ import annotations
+
+from deephaven.table import Table
+
+
+def validate_columns(table: Table, required_columns: list[str], raise_error: bool = False) -> bool:
+    """Check if table has all required columns.
+
+    Args:
+        table: The table to validate
+        required_columns: List of column names that must be present
+        raise_error: If True, raises ValueError when columns are missing
+
+    Returns:
+        True if all columns are present, False otherwise
+
+    Raises:
+        ValueError: If raise_error is True and columns are missing
+    """
+    table_columns = [col.name for col in table.columns]
+    missing = [col for col in required_columns if col not in table_columns]
+
+    if missing:
+        if raise_error:
+            raise ValueError(
+                f"Column(s) {missing} not found in table. "
+                f"Available columns: {', '.join(table_columns)}"
+            )
+        return False
+    return True
+
+
+def get_table_info(table: Table) -> dict:
+    """Get basic information about a table."""
+    return {
+        "num_rows": table.size,
+        "num_columns": len(table.columns),
+        "columns": [col.name for col in table.columns],
+    }
+```
+
+Create `src/my_dh_library/queries.py`:
+
+```python
+"""Reusable Deephaven query functions."""
+
+from deephaven.table import Table
+from deephaven import agg
+from .utils import validate_columns
+
+
+def filter_by_threshold(table: Table, column: str, threshold: float) -> Table:
+    """Filter table rows where column value exceeds threshold."""
+    validate_columns(table, [column], raise_error=True)
+    return table.where(f"{column} > {threshold}")
+
+
+def add_computed_columns(table: Table) -> Table:
+    """Add commonly used computed columns to a table."""
+    validate_columns(table, ["Value"], raise_error=True)
+    return table.update(
+        [
+            "DoubleValue = Value * 2",
+            "IsHigh = Value > 100",
+        ]
+    )
+
+
+def summarize_by_group(table: Table, group_col: str, value_col: str) -> Table:
+    """Create summary statistics grouped by a column."""
+    validate_columns(table, [group_col, value_col], raise_error=True)
+    return table.agg_by(
+        [
+            agg.sum_(f"Sum = {value_col}"),
+            agg.avg(f"Avg = {value_col}"),
+            agg.count_("Count"),
+        ],
+        by=[group_col],
+    )
+```
+
+Create `README.md` with installation and usage instructions.
+
+### Create a CLI-only package
+
+Create the directory structure:
+
+```bash
+mkdir -p my_dh_cli/src/my_dh_cli
+cd my_dh_cli
+```
+
+Create `pyproject.toml`:
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_cli"
+version = "0.1.0"
+description = "Command line tool for data processing"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+  # click implements the command line interface.
+  "click>=8.0.0",
+]
+
+[project.scripts]
+my-dh-query = "my_dh_cli.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+Create `src/my_dh_cli/__init__.py`:
+
+```python
+"""My Deephaven package for data processing."""
+
+__version__ = "0.1.0"
+```
+
+Create `src/my_dh_cli/__main__.py`:
+
+```python
+from my_dh_cli.cli import app
+
+if __name__ == "__main__":
+    app()
+```
+
+Create `src/my_dh_cli/cli.py`:
+
+```python
+import click
+
+
+def my_dh_query(input_file: str, verbose: bool = False):
+    """Read a CSV file and perform a simple query operation on the data."""
+    from deephaven import read_csv
+    from pathlib import Path
+
+    input_path = Path(input_file)
+
+    if not input_path.exists():
+        raise click.ClickException(f"Input file does not exist: '{input_path}'")
+    if not input_path.is_file():
+        raise click.ClickException(f"Input path is not a file: '{input_path}'")
+
+    if verbose:
+        click.echo(f"Processing {input_file}...")
+
+    try:
+        source = read_csv(input_file)
+    except Exception as e:
+        raise click.ClickException(f"Failed to read CSV file '{input_file}': {e}")
+
+    column_names = [col.name for col in source.columns]
+    if "Score" not in column_names:
+        raise click.ClickException(
+            f"File '{input_path.name}' is missing required column 'Score'. "
+            f"Available columns: {', '.join(column_names)}"
+        )
+
+    result = source.update(formulas=["DoubleScore = Score * 2"])
+
+    if verbose:
+        click.echo(f"Processed {result.size} rows")
+
+    return result
+
+
+@click.command()
+@click.argument("input_file", type=click.Path(exists=True))
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def app(input_file: str, verbose: bool) -> None:
+    """Process data with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
+    result = my_dh_query(input_file, verbose)
+    click.echo("Processing complete!")
+
+
+if __name__ == "__main__":
+    app()
+```
+
+Create `README.md` with installation and usage instructions.
+
+### Create a combined package
+
+Create the directory structure:
+
+```bash
+mkdir -p my_dh_toolkit/src/my_dh_toolkit
+cd my_dh_toolkit
+```
+
+Create `pyproject.toml`:
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_toolkit"
+version = "0.1.0"
+description = "Deephaven library and CLI tools"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+  # click implements the command line interfaces.
+  "click>=8.0.0",
+]
+
+[project.scripts]
+my-dh-toolkit-query = "my_dh_toolkit.cli:app"
+my-dh-toolkit-process = "my_dh_toolkit.processor:process"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+Create `src/my_dh_toolkit/__init__.py`:
+
+```python
+"""My Deephaven package for data processing.
+
+This __init__ deliberately imports nothing that requires Deephaven: the CLI
+entry points import this package before a Deephaven server is running, so the
+package must be importable without one. The library API lives in the
+`my_dh_toolkit.queries` and `my_dh_toolkit.utils` submodules.
+"""
+
+__version__ = "0.1.0"
+```
+
+The empty `__init__.py` is the key structural difference from a library-only package: if it imported the query functions, the import chain would reach `deephaven` and both commands would fail before they could start their server.
+
+Create `src/my_dh_toolkit/__main__.py`:
+
+```python
+from my_dh_toolkit.cli import app
+
+if __name__ == "__main__":
+    app()
+```
+
+Create the library modules (`queries.py`, `utils.py`) using the same code as the library-only package.
+
+Create `src/my_dh_toolkit/cli.py` using the same code as the CLI-only package.
+
+Create `src/my_dh_toolkit/processor.py`:
+
+```python
+import click
+from pathlib import Path
+
+
+def batch_process(directory: str, output_dir: str, verbose: bool = False) -> None:
+    """Process multiple CSV files from a directory."""
+    input_path = Path(directory)
+    output_path = Path(output_dir)
+
+    if not input_path.exists():
+        raise click.ClickException(f"Input directory does not exist: '{input_path}'")
+    if not input_path.is_dir():
+        raise click.ClickException(f"Input path is not a directory: '{input_path}'")
+
+    try:
+        output_path.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        raise click.ClickException(f"Permission denied: Cannot create output directory '{output_path}'")
+    except OSError as e:
+        raise click.ClickException(f"Failed to create output directory '{output_path}': {e}")
+
+    if input_path.resolve() == output_path.resolve():
+        raise click.ClickException(
+            f"Input and output directories must be different: '{input_path}'"
+        )
+
+    from deephaven import read_csv, write_csv
+
+    csv_files = list(input_path.glob("*.csv"))
+
+    if verbose:
+        click.echo(f"Found {len(csv_files)} CSV files to process")
+
+    for csv_file in csv_files:
+        if verbose:
+            click.echo(f"Processing {csv_file.name}...")
+
+        try:
+            table = read_csv(str(csv_file))
+        except Exception as e:
+            raise click.ClickException(f"Failed to read CSV file '{csv_file}': {e}")
+
+        column_names = [col.name for col in table.columns]
+        if "Score" not in column_names:
+            raise click.ClickException(
+                f"File '{csv_file.name}' is missing required column 'Score'. "
+                f"Available columns: {', '.join(column_names)}"
+            )
+
+        processed = table.update(formulas=["ProcessedScore = Score * 2"])
+
+        output_file = output_path / f"processed_{csv_file.name}"
+        try:
+            write_csv(processed, str(output_file))
+        except Exception as e:
+            raise click.ClickException(f"Failed to write output file '{output_file}': {e}")
+
+        if verbose:
+            click.echo(f"  Processed {processed.size} rows -> {output_file.name}")
+
+
+@click.command()
+@click.argument("directory", type=click.Path(exists=True, file_okay=False))
+@click.option("--output", "-o", default="./output", help="Output directory")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def process(directory: str, output: str, verbose: bool) -> None:
+    """Batch process CSV files with Deephaven."""
+    from deephaven_server import Server
+
+    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+
+    batch_process(directory, output, verbose)
+    click.echo("Batch processing complete!")
+
+
+if __name__ == "__main__":
+    process()
+```
+
+Create `README.md` with installation and usage instructions.
+
+</details>
+
+## Configure `pyproject.toml`
+
+The [`pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) file defines your package configuration.
+
+### Configuration options
+
+Here's a detailed breakdown of `pyproject.toml` for a library-only package:
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_library"
+version = "0.1.0"
+description = "Reusable Deephaven query functions"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+### Key sections
+
+- **`[build-system]`** - Specifies setuptools as the build backend
+- **`[project]`** - Package metadata and dependencies
+- **`name`** - Project name (used for `pip install`)
+- **`dependencies`** - Required packages, installed automatically
+- **`[tool.setuptools.packages.find]`** - Tells setuptools to find packages in `src/`
+
+For CLI packages, add a `[project.scripts]` section:
+
+```toml
+[project.scripts]
+my-dh-query = "my_dh_cli.cli:app"
+```
+
+This creates a command line entry point that calls the `app` function from `my_dh_cli.cli`.
+
+## Managing dependencies
+
+Dependencies are specified in the `dependencies` field:
+
+```toml
+[project]
+dependencies = [
+  "deephaven-server>=0.35.0",
+  "click>=8.0.0",
+  "pandas>=2.0.0",
+]
+```
+
+Declaring `deephaven-server` is sufficient for Deephaven: it depends on a matching version of `deephaven-core`, which provides the `deephaven` module that packages import.
+
+### Version constraints
+
+Use version specifiers to control which versions are acceptable:
+
+- `>=0.35.0` - Minimum version (0.35.0 or higher)
+- `>=2.0.0,<3.0.0` - Version range (2.x only)
+- `~=1.24.0` - Compatible release (>=1.24.0, <1.25.0)
+- `==1.0.0` - Exact version (not recommended for libraries)
+
+### Optional dependencies
+
+Define optional feature sets that users can install separately:
+
+```toml
+[project.optional-dependencies]
+visualization = [
+  "matplotlib>=3.7.0",
+  "seaborn>=0.12.0",
+]
+dev = [
+  "pytest>=7.0.0",
+  "black>=23.0.0",
+]
+```
+
+Users can install optional dependencies:
+
+```bash
+pip install my_dh_library[visualization]
+pip install my_dh_library[visualization,dev]
+```
+
+## Installation and usage
+
+### Install a package
+
+Install from source in editable mode for development:
+
+```bash
+cd my_dh_library
+pip install -e .
+```
+
+Or install normally:
+
+```bash
+pip install .
+```
+
+### Use a library package
+
+After installation, import and use the library functions:
+
+```python
+# Start the Deephaven server
+from deephaven_server import Server
+server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
+
+# Import and use library functions
+from my_dh_library.queries import filter_by_threshold
+from deephaven import read_csv
+
+data = read_csv("data.csv")
+filtered = filter_by_threshold(data, "Score", 75.0)
+```
+
+> [!NOTE]
+> All Deephaven functionality requires a running server. Start the server before importing Deephaven modules.
+
+### Use CLI functions
+
+Entry-point commands like `my-dh-query` start their own Deephaven server, so they run as standalone terminal commands:
+
+```bash
+my-dh-query data.csv --verbose
+```
+
+For programmatic use, install a library package (or the combined package) and import its functions as shown in [Use a library package](#use-a-library-package).
+
+## Building and distributing
+
+Build a distributable wheel:
+
+```bash
+cd my_dh_library
+pip install build
+python -m build
+```
+
+This creates a `.whl` file in `dist/` that can be:
+
+- Installed locally: `pip install dist/my_dh_library-0.1.0-py3-none-any.whl`
+- Distributed to others
+- Published to PyPI: `python -m twine upload dist/*`
+
+## Best practices
+
+### Package structure
+
+- Prefer the src-layout for packages like these examples
+- Keep package names lowercase with underscores
+- Match the package directory name to the import name
+- Include `__init__.py` in all package directories
+- In packages that define entry-point commands, keep `__init__.py` free of imports that require a running Deephaven server
+
+### Dependencies
+
+- Specify minimum versions for Deephaven and critical dependencies
+- Use version ranges for flexibility
+- Group related optional dependencies
+- Document any system-level dependencies
+
+### Documentation
+
+- Include a comprehensive README.md
+- Document all public functions and classes
+- Provide usage examples
+- Explain server initialization requirements
+
+### Testing
+
+- Write tests for all public functions
+- Test with different Deephaven versions
+- Include sample data for testing
+- Document how to run tests
+
+## Next steps
+
+The [deephaven-python-packaging](https://github.com/deephaven-examples/deephaven-python-packaging) repository provides complete, working examples of all three packaging scenarios. Clone the repository and explore the examples to see how to structure your own Deephaven packages.
+
+Each example includes:
+
+- Complete source code
+- Configured `pyproject.toml`
+- Comprehensive README
+- Usage examples
+
+The repository also provides shared sample data in its `data/` directory for trying the examples.
+
+## Related documentation
+
+- [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/)
+- [Use the Deephaven Python package](https://deephaven.io/core/docs/how-to-guides/deephaven-python-package/)
+- [Writing your `pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
+- [src layout vs flat layout](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/)
+- [Creating and packaging command-line tools](https://packaging.python.org/en/latest/guides/creating-command-line-tools/)
+- [Setuptools documentation](https://setuptools.pypa.io/)
+- [Click documentation](https://click.palletsprojects.com/)
