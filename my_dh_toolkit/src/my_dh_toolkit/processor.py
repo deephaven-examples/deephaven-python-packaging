@@ -11,7 +11,11 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
         raise click.ClickException(f"Input directory does not exist: '{input_path}'")
     if not input_path.is_dir():
         raise click.ClickException(f"Input path is not a directory: '{input_path}'")
-    
+    if input_path.resolve() == output_path.resolve():
+        raise click.ClickException(
+            f"Input and output directories must be different: '{input_path}'"
+        )
+
     try:
         output_path.mkdir(parents=True, exist_ok=True)
     except PermissionError:
@@ -19,12 +23,12 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
     except OSError as e:
         raise click.ClickException(f"Failed to create output directory '{output_path}': {e}")
 
-    if input_path.resolve() == output_path.resolve():
-        raise click.ClickException(
-            f"Input and output directories must be different: '{input_path}'"
-        )
-
+    # Imported here, not at module level: these modules import deephaven, which
+    # requires a running server. The entry point starts the server first, then
+    # calls this function.
     from deephaven import read_csv, write_csv
+    from my_dh_toolkit.queries import add_computed_columns
+    from my_dh_toolkit.utils import validate_columns
 
     csv_files = list(input_path.glob("*.csv"))
 
@@ -39,16 +43,14 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
             table = read_csv(str(csv_file))
         except Exception as e:
             raise click.ClickException(f"Failed to read CSV file '{csv_file}': {e}")
-        
-        column_names = [col.name for col in table.columns]
-        if "Score" not in column_names:
-            raise click.ClickException(
-                f"File '{csv_file.name}' is missing required column 'Score'. "
-                f"Available columns: {', '.join(column_names)}"
-            )
-        
-        processed = table.update(formulas=["ProcessedScore = Score * 2"])
-        
+
+        try:
+            validate_columns(table, ["Value"], raise_error=True)
+        except ValueError as e:
+            raise click.ClickException(f"File '{csv_file.name}': {e}")
+
+        processed = add_computed_columns(table)
+
         output_file = output_path / f"processed_{csv_file.name}"
         try:
             write_csv(processed, str(output_file))

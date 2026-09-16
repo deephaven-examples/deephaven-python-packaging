@@ -8,7 +8,7 @@ This repository shows how to package Python code that uses [Deephaven Community 
 | [`my_dh_cli/`](my_dh_cli/) | Command line tool only | A `my-dh-query` terminal command |
 | [`my_dh_toolkit/`](my_dh_toolkit/) | Library and command line tools combined | Importable functions plus `my-dh-toolkit-query` and `my-dh-toolkit-process` commands |
 
-`my_dh_toolkit` is the other two patterns merged into a single package: its library modules play the same role as `my_dh_library`, and its commands play the same role as `my_dh_cli`.
+`my_dh_toolkit` is the other two patterns merged into a single package: its library modules play the same role as `my_dh_library`, and its commands play the same role as `my_dh_cli`. Its commands also call its own library functions, so the same code is reachable from Python and from the terminal.
 
 All three examples follow the [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) conventions: a `pyproject.toml` file for metadata, dependencies, and entry points, and the src-layout for source code. This repository accompanies the [Packaging custom code and dependencies](https://deephaven.io/core/docs/how-to-guides/sysadmin/setuptools-deployment/) guide, which explains the underlying concepts in depth.
 
@@ -23,12 +23,13 @@ All three examples follow the [Python Packaging User Guide](https://packaging.py
 - Python 3.9 or later.
 - pip.
 - Java 17 or later (required by `deephaven-server`, which each example installs as a dependency).
+- The examples declare `deephaven-server` 0.35.0 or later as their dependency. For the latest Deephaven version, see [deephaven.io](https://deephaven.io/).
 
 ## Get the examples
 
 Clone the repository and work from its root directory. All commands below are run from the repository root.
 
-```shell
+```bash
 git clone https://github.com/deephaven-examples/deephaven-python-packaging.git
 cd deephaven-python-packaging
 ```
@@ -37,8 +38,8 @@ cd deephaven-python-packaging
 
 The examples read the CSV files in the `data/` directory:
 
-- `data/sample.csv` — a single 10-row file with `Name`, `Score`, `Value`, and `Category` columns. It is the input for the single-file examples: the library snippets, `my-dh-query`, and `my-dh-toolkit-query`.
-- `data/batch/` — three smaller files (`file1.csv`, `file2.csv`, and `file3.csv`) with the same columns but different rows. It is the input for `my-dh-toolkit-process`, which processes every CSV file in a directory.
+- `data/sample.csv`: a single 10-row file with `Name`, `Score`, `Value`, and `Category` columns. It is the input for the single-file examples: the library snippets, `my-dh-query`, and `my-dh-toolkit-query`.
+- `data/batch/`: three smaller files (`file1.csv`, `file2.csv`, and `file3.csv`) with the same columns but different rows. It is the input for `my-dh-toolkit-process`, which processes every CSV file in a directory.
 
 ## Example 1: `my_dh_library` — a library
 
@@ -61,7 +62,7 @@ There is no `[project.scripts]` section in `pyproject.toml` and no `__main__.py`
 
 Install the package and start Python:
 
-```shell
+```bash
 pip install -e ./my_dh_library
 python
 ```
@@ -84,9 +85,9 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 ### What to study
 
-- [`pyproject.toml`](my_dh_library/pyproject.toml) — the `dependencies` list installs `deephaven-server` automatically, and `[tool.setuptools.packages.find]` points setuptools at `src/`.
-- [`queries.py`](my_dh_library/src/my_dh_library/queries.py) — plain functions that take and return Deephaven tables.
-- [`__init__.py`](my_dh_library/src/my_dh_library/__init__.py) — re-exports the public functions.
+- [`pyproject.toml`](my_dh_library/pyproject.toml): the `dependencies` list installs `deephaven-server` automatically, and `[tool.setuptools.packages.find]` points setuptools at `src/`.
+- [`queries.py`](my_dh_library/src/my_dh_library/queries.py): plain functions that take and return Deephaven tables.
+- [`__init__.py`](my_dh_library/src/my_dh_library/__init__.py): re-exports the public functions.
 
 ## Example 2: `my_dh_cli` — a command line tool
 
@@ -114,30 +115,30 @@ my-dh-query = "my_dh_cli.cli:app"
 
 Install the package, then run the command on the sample data:
 
-```shell
+```bash
 pip install -e ./my_dh_cli
 my-dh-query data/sample.csv --verbose
 ```
 
-The command starts its own Deephaven server, reads the CSV file, adds a computed column, and reports the row count. No separate setup is needed.
+The command starts its own Deephaven server, reads the CSV file, adds a computed `DoubleScore` column, and reports the row count. No separate setup is needed.
 
 ### What to study
 
-- [`pyproject.toml`](my_dh_cli/pyproject.toml) — the `[project.scripts]` section maps the command name to a function.
-- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py) — a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool.
-- [`__main__.py`](my_dh_cli/src/my_dh_cli/__main__.py) — allows `python -m my_dh_cli data/sample.csv` as an alternative during development.
+- [`pyproject.toml`](my_dh_cli/pyproject.toml): the `[project.scripts]` section maps the command name to a function.
+- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool.
+- [`__main__.py`](my_dh_cli/src/my_dh_cli/__main__.py): allows `python -m my_dh_cli data/sample.csv` as an alternative during development.
 
 ## Example 3: `my_dh_toolkit` — a library and command line tools in one package
 
-**The story:** one package that provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The library modules reuse the `my_dh_library` code, and the command modules reuse the `my_dh_cli` code plus a second command that shows one package installing multiple commands.
+**The story:** one package that provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The commands call the package's own library functions, so there is one implementation behind both interfaces.
 
 ```
 my_dh_toolkit/
 ├── src/
 │   └── my_dh_toolkit/
-│       ├── __init__.py     # Intentionally contains no imports — see "What to study"
-│       ├── __main__.py
-│       ├── cli.py          # Implements my-dh-toolkit-query (same code as my_dh_cli)
+│       ├── __init__.py     # Intentionally contains no imports (see "What to study")
+│       ├── __main__.py     # Enables `python -m my_dh_toolkit` (runs the query command)
+│       ├── cli.py          # Implements my-dh-toolkit-query (same pattern as my_dh_cli)
 │       ├── processor.py    # Implements my-dh-toolkit-process
 │       ├── queries.py      # Library query functions (same code as my_dh_library)
 │       └── utils.py        # Library table helpers (same code as my_dh_library)
@@ -149,13 +150,13 @@ my_dh_toolkit/
 
 Install the package, then run each command:
 
-```shell
+```bash
 pip install -e ./my_dh_toolkit
 my-dh-toolkit-query data/sample.csv --verbose
 my-dh-toolkit-process data/batch --output output --verbose
 ```
 
-`my-dh-toolkit-query` processes one CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes one result file per input to the output directory. Like `my-dh-query` in the previous example, each command starts its own Deephaven server.
+`my-dh-toolkit-query` processes one CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes one result file per input to the output directory. Both commands validate that the input has a `Value` column and add `DoubleValue` and `IsHigh` columns by calling the library's `validate_columns` and `add_computed_columns`. Like `my-dh-query` in the previous example, each command starts its own Deephaven server.
 
 ### Try the library
 
@@ -177,8 +178,9 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 ### What to study
 
-- [`pyproject.toml`](my_dh_toolkit/pyproject.toml) — a single `[project.scripts]` section defines both commands.
-- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py) — contains no imports, and that is deliberate. Importing any `deephaven` module fails unless a Deephaven server is already running in the process. When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, that import chain would reach `deephaven` and every command would fail at startup. Keeping `__init__.py` empty and importing the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`) avoids the problem. `my_dh_library` can safely re-export its functions from `__init__.py` because it has no commands: it is only ever imported after a server is running.
+- [`pyproject.toml`](my_dh_toolkit/pyproject.toml): a single `[project.scripts]` section defines both commands.
+- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py): contains no imports, and that is deliberate. Importing any `deephaven` module fails unless a Deephaven server is already running in the process. When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, that import chain would reach `deephaven` and every command would fail at startup. Keeping `__init__.py` empty and importing the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`) avoids the problem. `my_dh_library` can safely re-export its functions from `__init__.py` because it has no commands: it is only ever imported after a server is running.
+- [`cli.py`](my_dh_toolkit/src/my_dh_toolkit/cli.py) and [`processor.py`](my_dh_toolkit/src/my_dh_toolkit/processor.py): the commands import `my_dh_toolkit.queries` and `my_dh_toolkit.utils` *inside* the function that runs after the server has started, for the same reason. That is how a command module can reuse library code that depends on `deephaven`.
 
 ## Adapt an example for your own project
 
@@ -186,18 +188,18 @@ Each example is a template. To turn one into your own package:
 
 1. **Copy the example** that matches your scenario:
 
-   ```shell
+   ```bash
    cp -r my_dh_cli my_tool
    cd my_tool
    ```
 
-2. **Rename the import package** — the directory under `src/` is the name used in `import` statements:
+2. **Rename the import package.** The directory under `src/` is the name used in `import` statements:
 
-   ```shell
+   ```bash
    mv src/my_dh_cli src/my_tool
    ```
 
-3. **Update `pyproject.toml`** — set your own `name`, `version`, and `description`, and point any `[project.scripts]` entries at the new package:
+3. **Update `pyproject.toml`.** Set your own `name`, `version`, and `description`, and point any `[project.scripts]` entries at the new package:
 
    ```toml
    [project]
@@ -213,7 +215,7 @@ Each example is a template. To turn one into your own package:
 
 6. **Reinstall and test:**
 
-   ```shell
+   ```bash
    pip install -e .
    my-tool --help
    ```
@@ -222,12 +224,12 @@ Three names must stay in sync: the package directory under `src/`, the module pa
 
 ## Install and distribute
 
-The examples above use editable installs (`pip install -e ./my_dh_cli`), which pick up source edits without reinstalling — ideal while developing. The other common options:
+The examples above use editable installs (`pip install -e ./my_dh_cli`), which pick up source edits without reinstalling. This is ideal while developing. The other common options:
 
 - **Regular install from source:** `pip install ./my_dh_cli`
 - **Build and install a wheel** — the format to use when distributing a package to other machines or publishing to a package index:
 
-  ```shell
+  ```bash
   pip install build
   python -m build my_dh_cli
   pip install my_dh_cli/dist/my_dh_cli-0.1.0-py3-none-any.whl
@@ -237,21 +239,18 @@ The examples above use editable installs (`pip install -e ./my_dh_cli`), which p
 
 ## Troubleshooting
 
-- **Command not found after installation** — confirm the install succeeded (`pip show my_dh_cli`) and that the Python scripts directory is on `PATH`. Installing inside an activated virtual environment avoids most `PATH` issues.
-- **`deephaven` import errors** — the Deephaven server must be started (as shown in the library examples) before `deephaven` modules are imported, and Java 17 or later must be available.
-- **Module not found after renaming** — check that the directory under `src/`, the `[project.scripts]` module paths, and the `import` statements all use the new package name, then reinstall with `pip install -e .`.
+- **Command not found after installation:** confirm the install succeeded (`pip show my_dh_cli`) and that the Python scripts directory is on `PATH`. Installing inside an activated virtual environment avoids most `PATH` issues.
+- **`Address already in use` when a command or snippet starts:** the examples bind the Deephaven server to port 10000. If another process already uses that port (for example, a Deephaven server running in Docker), change the `port` value in the `Server(...)` call to a free port.
+- **`deephaven` import errors:** the Deephaven server must be started (as shown in the library examples) before `deephaven` modules are imported, and Java 17 or later must be available.
+- **Module not found after renaming:** check that the directory under `src/`, the `[project.scripts]` module paths, and the `import` statements all use the new package name, then reinstall with `pip install -e .`.
 
 ## Related documentation
 
-- [Packaging custom code and dependencies](https://deephaven.io/core/docs/how-to-guides/sysadmin/setuptools-deployment/) — the guide this repository accompanies.
+- [Packaging custom code and dependencies](https://deephaven.io/core/docs/how-to-guides/sysadmin/setuptools-deployment/), the guide this repository accompanies.
 - [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/)
 - [Use the Deephaven Python package](https://deephaven.io/core/docs/how-to-guides/deephaven-python-package/)
 - [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/)
 - [Click documentation](https://click.palletsprojects.com/)
-
-## Note
-
-The code in this repository is built for Deephaven Community Core v0.35.0 or later. For the latest Deephaven version, see [deephaven.io](https://deephaven.io/).
 
 ## Contributing
 

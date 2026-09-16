@@ -1,25 +1,25 @@
 # My Deephaven Library
 
-An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command line tools — this package is only ever imported.
+An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command line tools; this package is only ever imported.
 
 ## Installation
 
 From the repository root:
 
-```shell
+```bash
 pip install ./my_dh_library
 ```
 
 Or in editable mode for development:
 
-```shell
+```bash
 pip install -e ./my_dh_library
 ```
 
 ## Usage
 
 > [!NOTE]
-> All Deephaven functionality requires a running server in the same Python process. Start the server before importing `deephaven` modules.
+> All Deephaven functionality requires a running server in the same Python process. Start the server before importing `deephaven` modules. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
 
 From the repository root, start Python and use the library:
 
@@ -54,4 +54,4 @@ enhanced = add_computed_columns(filtered)
 
 - Python 3.9 or later
 - Java 17 or later
-- Deephaven Server 0.35.0 or later
+- deephaven-server 0.35.0 or later (installed automatically as a dependency)

@@ -1,4 +1,4 @@
-"""My Deephaven package for data processing.
+"""Deephaven query library and command line tools.
 
 This __init__ deliberately imports nothing that requires Deephaven: the CLI
 entry points import this package before a Deephaven server is running, so the

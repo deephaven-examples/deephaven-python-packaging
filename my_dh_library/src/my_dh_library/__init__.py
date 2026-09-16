@@ -1,4 +1,4 @@
-"""My Deephaven package for data processing."""
+"""Reusable Deephaven query functions and table utilities."""
 
 __version__ = "0.1.0"
 
