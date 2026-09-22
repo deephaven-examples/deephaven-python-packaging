@@ -30,7 +30,7 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
     from my_dh_toolkit.queries import add_computed_columns
     from my_dh_toolkit.utils import validate_columns
 
-    csv_files = list(input_path.glob("*.csv"))
+    csv_files = [path for path in input_path.glob("*.csv") if path.is_file()]
 
     if verbose:
         click.echo(f"Found {len(csv_files)} CSV files to process")
