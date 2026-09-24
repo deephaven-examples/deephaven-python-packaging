@@ -26,7 +26,8 @@ From the repository root, start Python and use the library:
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-Server(port=10000, jvm_args=["-Xmx4g"]).start()
+server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
 
 # Import and use the installed library.
 from my_dh_library.queries import filter_by_threshold, add_computed_columns
@@ -42,7 +43,7 @@ enhanced = add_computed_columns(filtered)
 ### Query functions (`my_dh_library.queries`)
 
 - `filter_by_threshold(table, column, threshold)` - Filter table rows where the column value exceeds the threshold.
-- `add_computed_columns(table)` - Add commonly used computed columns to a table.
+- `add_computed_columns(table)` - Add `DoubleValue` and `IsHigh` columns computed from `Value`.
 - `summarize_by_group(table, group_col, value_col)` - Create summary statistics grouped by a column.
 
 ### Utility functions (`my_dh_library.utils`)

@@ -1,4 +1,4 @@
-from my_dh_toolkit.cli import app
+from my_dh_toolkit.query import main
 
 if __name__ == "__main__":
-    app()
+    main()

@@ -72,7 +72,8 @@ A library that uses Deephaven needs a running server in the same process, so sta
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-Server(port=10000, jvm_args=["-Xmx4g"]).start()
+server = server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
 
 # Import and use the installed library.
 from my_dh_library.queries import filter_by_threshold
@@ -138,8 +139,8 @@ my_dh_toolkit/
 │   └── my_dh_toolkit/
 │       ├── __init__.py     # Intentionally contains no imports (see "What to study")
 │       ├── __main__.py     # Enables `python -m my_dh_toolkit` (runs the query command)
-│       ├── cli.py          # Implements my-dh-toolkit-query (same pattern as my_dh_cli)
-│       ├── processor.py    # Implements my-dh-toolkit-process
+│       ├── query.py        # Implements my-dh-toolkit-query (same Click pattern as my_dh_cli)
+│       ├── process.py      # Implements my-dh-toolkit-process
 │       ├── queries.py      # Library query functions (same code as my_dh_library)
 │       └── utils.py        # Library table helpers (same code as my_dh_library)
 ├── pyproject.toml          # Declares both commands
@@ -165,7 +166,8 @@ The same installation also provides the library. In a Python session, start a De
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-Server(port=10000, jvm_args=["-Xmx4g"]).start()
+server = server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
 
 # Import and use the installed library.
 from my_dh_toolkit.queries import filter_by_threshold
@@ -180,7 +182,7 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 - [`pyproject.toml`](my_dh_toolkit/pyproject.toml): a single `[project.scripts]` section defines both commands.
 - [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py): contains no imports, and that is deliberate. Importing any `deephaven` module fails unless a Deephaven server is already running in the process. When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, that import chain would reach `deephaven` and every command would fail at startup. Keeping `__init__.py` empty and importing the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`) avoids the problem. `my_dh_library` can safely re-export its functions from `__init__.py` because it has no commands: it is only ever imported after a server is running.
-- [`cli.py`](my_dh_toolkit/src/my_dh_toolkit/cli.py) and [`processor.py`](my_dh_toolkit/src/my_dh_toolkit/processor.py): the commands import `my_dh_toolkit.queries` and `my_dh_toolkit.utils` *inside* the function that runs after the server has started, for the same reason. That is how a command module can reuse library code that depends on `deephaven`.
+- [`query.py`](my_dh_toolkit/src/my_dh_toolkit/query.py) and [`process.py`](my_dh_toolkit/src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Both import `my_dh_toolkit.queries` and `my_dh_toolkit.utils` *inside* the function that runs after the server has started — that is how a command module can reuse library code that depends on `deephaven`.
 
 ## Adapt an example for your own project
 

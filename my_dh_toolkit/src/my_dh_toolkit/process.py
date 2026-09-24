@@ -65,15 +65,16 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.argument("directory", type=click.Path(exists=True, file_okay=False))
 @click.option("--output", "-o", default="./output", help="Output directory")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def process(directory: str, output: str, verbose: bool) -> None:
+def main(directory: str, output: str, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
     from deephaven_server import Server
 
-    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+    server = Server(port=10000, jvm_args=["-Xmx4g"])
+    server.start()
 
     batch_process(directory, output, verbose)
     click.echo("Batch processing complete!")
 
 
 if __name__ == "__main__":
-    process()
+    main()

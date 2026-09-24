@@ -43,7 +43,8 @@ def app(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
     from deephaven_server import Server
 
-    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+    server = Server(port=10000, jvm_args=["-Xmx4g"])
+    server.start()
 
     my_dh_query(input_file, verbose)
     click.echo("Processing complete!")

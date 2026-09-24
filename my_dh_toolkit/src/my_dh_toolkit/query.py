@@ -42,15 +42,16 @@ def my_dh_query(input_file: str, verbose: bool = False):
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def app(input_file: str, verbose: bool) -> None:
+def main(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
     from deephaven_server import Server
 
-    Server(port=10000, jvm_args=["-Xmx4g"]).start()
+    server = Server(port=10000, jvm_args=["-Xmx4g"])
+    server.start()
 
     my_dh_query(input_file, verbose)
     click.echo("Processing complete!")
 
 
 if __name__ == "__main__":
-    app()
+    main()

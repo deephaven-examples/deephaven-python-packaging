@@ -11,8 +11,8 @@ The commands are defined by the `[project.scripts]` entry points in [`pyproject.
 
 ```toml
 [project.scripts]
-my-dh-toolkit-query = "my_dh_toolkit.cli:app"
-my-dh-toolkit-process = "my_dh_toolkit.processor:process"
+my-dh-toolkit-query = "my_dh_toolkit.query:main"
+my-dh-toolkit-process = "my_dh_toolkit.process:main"
 ```
 
 ## Installation
@@ -40,7 +40,7 @@ my-dh-toolkit-process data/batch --output output --verbose
 
 `my-dh-toolkit-query` processes a single CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes the results to the output directory. Both commands require a `Value` column and add `DoubleValue` and `IsHigh` columns.
 
-The commands bind their server to port 10000. If that port is already in use (for example, by Deephaven running in Docker), change the `port` value in [`cli.py`](src/my_dh_toolkit/cli.py) and [`processor.py`](src/my_dh_toolkit/processor.py).
+The commands bind their server to port 10000. If that port is already in use (for example, by Deephaven running in Docker), change the `port` value in [`query.py`](src/my_dh_toolkit/query.py) and [`process.py`](src/my_dh_toolkit/process.py).
 
 During development, the query command also runs via [`__main__.py`](src/my_dh_toolkit/__main__.py):
 
@@ -58,7 +58,8 @@ From the repository root, start Python and use the library:
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-Server(port=10000, jvm_args=["-Xmx4g"]).start()
+server = Server(port=10000, jvm_args=["-Xmx4g"])
+server.start()
 
 # Import and use the installed library.
 from my_dh_toolkit.queries import filter_by_threshold, add_computed_columns
