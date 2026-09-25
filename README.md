@@ -92,7 +92,7 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 ## Example 2: `my_dh_cli` — a command line tool
 
-**The story:** package a Deephaven script as a terminal command. `pip install` creates a `my-dh-query` command that users run without writing any Python.
+This example packages a Deephaven script as a terminal command. `pip install` creates a `my-dh-query` command that users run without writing any Python.
 
 ```
 my_dh_cli/
@@ -131,7 +131,7 @@ The command starts its own Deephaven server, reads the CSV file, adds a computed
 
 ## Example 3: `my_dh_toolkit` — a library and command line tools in one package
 
-**The story:** one package that provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The commands call the package's own library functions, so there is one implementation behind both interfaces.
+In this example, one package provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The commands call the package's own library functions, so there is one implementation behind both interfaces.
 
 ```
 my_dh_toolkit/
