@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_cli"
+version = "0.1.0"
+description = "Command line tool for data processing"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+  # click implements the command line interface.
+  "click>=8.0.0",
+]
+
+[project.scripts]
+my-dh-query = "my_dh_cli.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
