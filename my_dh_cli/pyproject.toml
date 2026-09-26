@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-my-dh-query = "my_dh_cli.cli:app"
+my-dh-query = "my_dh_cli.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
