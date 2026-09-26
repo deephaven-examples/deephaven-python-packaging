@@ -8,8 +8,6 @@ This repository shows how to package Python code that uses [Deephaven Community 
 | [`my_dh_cli/`](my_dh_cli/) | Command line tool only | A `my-dh-query` terminal command |
 | [`my_dh_toolkit/`](my_dh_toolkit/) | Library and command line tools combined | Importable functions plus `my-dh-toolkit-query` and `my-dh-toolkit-process` commands |
 
-`my_dh_toolkit` is the other two patterns merged into a single package: its library modules play the same role as `my_dh_library`, and its commands play the same role as `my_dh_cli`. Its commands also call its own library functions, so the same code is reachable from Python and from the terminal.
-
 All three examples follow the [Python Packaging User Guide](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/) conventions: a `pyproject.toml` file for metadata, dependencies, and entry points, and the src-layout for source code. This repository accompanies the [Packaging custom code and dependencies](https://deephaven.io/core/docs/how-to-guides/sysadmin/setuptools-deployment/) guide, which explains the underlying concepts in depth.
 
 ## Choose an example
@@ -72,7 +70,7 @@ A library that uses Deephaven needs a running server in the same process, so sta
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-server = server = Server(port=10000, jvm_args=["-Xmx4g"])
+server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
 # Import and use the installed library.
@@ -109,7 +107,7 @@ The command comes from one line in `pyproject.toml`:
 
 ```toml
 [project.scripts]
-my-dh-query = "my_dh_cli.cli:app"
+my-dh-query = "my_dh_cli.cli:main"
 ```
 
 ### Try it
@@ -126,12 +124,14 @@ The command starts its own Deephaven server, reads the CSV file, adds a computed
 ### What to study
 
 - [`pyproject.toml`](my_dh_cli/pyproject.toml): the `[project.scripts]` section maps the command name to a function.
-- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool.
+- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside the function that runs after the server has started, not at the top of the module, because `deephaven` modules can't be imported until a server is running.
 - [`__main__.py`](my_dh_cli/src/my_dh_cli/__main__.py): allows `python -m my_dh_cli data/sample.csv` as an alternative during development.
 
 ## Example 3: `my_dh_toolkit` — a library and command line tools in one package
 
 In this example, one package provides both interfaces. Python users import its query functions, just as in `my_dh_library`; terminal users run its installed commands, just as in `my_dh_cli`. The commands call the package's own library functions, so there is one implementation behind both interfaces.
+
+`queries.py` and `utils.py` are copies of the `my_dh_library` modules rather than a dependency on that package. The duplication is deliberate: it keeps each example self-contained, so you can copy any one of them on its own.
 
 ```
 my_dh_toolkit/
@@ -166,7 +166,7 @@ The same installation also provides the library. In a Python session, start a De
 ```python
 # A Deephaven server must be running before deephaven modules are imported.
 from deephaven_server import Server
-server = server = Server(port=10000, jvm_args=["-Xmx4g"])
+server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
 
 # Import and use the installed library.
@@ -181,8 +181,11 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 ### What to study
 
 - [`pyproject.toml`](my_dh_toolkit/pyproject.toml): a single `[project.scripts]` section defines both commands.
-- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py): contains no imports, and that is deliberate. Importing any `deephaven` module fails unless a Deephaven server is already running in the process. When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, that import chain would reach `deephaven` and every command would fail at startup. Keeping `__init__.py` empty and importing the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`) avoids the problem. `my_dh_library` can safely re-export its functions from `__init__.py` because it has no commands: it is only ever imported after a server is running.
-- [`query.py`](my_dh_toolkit/src/my_dh_toolkit/query.py) and [`process.py`](my_dh_toolkit/src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Both import `my_dh_toolkit.queries` and `my_dh_toolkit.utils` *inside* the function that runs after the server has started — that is how a command module can reuse library code that depends on `deephaven`.
+- [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py): deliberately contains no imports.
+  - Importing any `deephaven` module fails unless a Deephaven server is already running in the process.
+  - When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, the import would reach `deephaven` and every command would fail at startup.
+  - For this reason, Python users import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`). `my_dh_library` can re-export its functions from `__init__.py` because it has no commands, so it is only imported after a server is running.
+- [`query.py`](my_dh_toolkit/src/my_dh_toolkit/query.py) and [`process.py`](my_dh_toolkit/src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside the function that runs after the server has started.
 
 ## Adapt an example for your own project
 
@@ -208,10 +211,10 @@ Each example is a template. To turn one into your own package:
    name = "my_tool"
 
    [project.scripts]
-   my-tool = "my_tool.cli:app"
+   my-tool = "my_tool.cli:main"
    ```
 
-4. **Update internal imports** to the new package name (for example, `from my_tool.cli import app` in `__main__.py`).
+4. **Update internal imports** to the new package name (for example, `from my_tool.cli import main` in `__main__.py`).
 
 5. **Replace the example logic** with your own code, and add any packages it needs to `dependencies` in `pyproject.toml`. Keep `deephaven-server` in the list so it installs automatically.
 
