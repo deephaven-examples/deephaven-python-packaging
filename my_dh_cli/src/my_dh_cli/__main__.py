@@ -1,4 +1,4 @@
-from my_dh_cli.cli import app
+from my_dh_cli.cli import main
 
 if __name__ == "__main__":
-    app()
+    main()

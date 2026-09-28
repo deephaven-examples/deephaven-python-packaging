@@ -6,7 +6,7 @@ The command is defined by the `[project.scripts]` entry point in [`pyproject.tom
 
 ```toml
 [project.scripts]
-my-dh-query = "my_dh_cli.cli:app"
+my-dh-query = "my_dh_cli.cli:main"
 ```
 
 ## Installation

@@ -3,6 +3,8 @@ import click
 
 def my_dh_query(input_file: str, verbose: bool = False):
     """Read a CSV file and perform a simple query operation on the data."""
+    # Imported here, not at module level: deephaven requires a running server.
+    # The entry point starts the server first, then calls this function.
     from deephaven import read_csv
     from pathlib import Path
 
@@ -39,7 +41,7 @@ def my_dh_query(input_file: str, verbose: bool = False):
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True))
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def app(input_file: str, verbose: bool) -> None:
+def main(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
     from deephaven_server import Server
 
@@ -51,4 +53,4 @@ def app(input_file: str, verbose: bool) -> None:
 
 
 if __name__ == "__main__":
-    app()
+    main()
