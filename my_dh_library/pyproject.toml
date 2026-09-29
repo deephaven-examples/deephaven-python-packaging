@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_library"
+version = "0.1.0"
+description = "Reusable Deephaven query functions"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  "deephaven-server>=0.35.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
