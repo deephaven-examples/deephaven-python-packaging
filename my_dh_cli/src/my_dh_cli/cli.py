@@ -43,10 +43,15 @@ def my_dh_query(input_file: str, verbose: bool = False):
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def main(input_file: str, verbose: bool) -> None:
     """Process data with Deephaven."""
-    from deephaven_server import Server
+    try:
+        from deephaven_server import Server
 
-    server = Server(port=10000, jvm_args=["-Xmx4g"])
-    server.start()
+        server = Server(port=10000, jvm_args=["-Xmx4g"])
+        server.start()
+    except Exception as e:
+        raise click.ClickException(
+            f"Failed to start Deephaven server on port 10000: {e}"
+        )
 
     my_dh_query(input_file, verbose)
     click.echo("Processing complete!")

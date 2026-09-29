@@ -67,10 +67,15 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def main(directory: str, output: str, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
-    from deephaven_server import Server
+    try:
+        from deephaven_server import Server
 
-    server = Server(port=10000, jvm_args=["-Xmx4g"])
-    server.start()
+        server = Server(port=10000, jvm_args=["-Xmx4g"])
+        server.start()
+    except Exception as e:
+        raise click.ClickException(
+            f"Failed to start Deephaven server on port 10000: {e}"
+        )
 
     batch_process(directory, output, verbose)
     click.echo("Batch processing complete!")
