@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_client"
+version = "0.1.0"
+description = "Command line client for a running Deephaven server"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # pydeephaven is the Python client. It connects to a running server and does not start one.
+  "pydeephaven>=0.35.0",
+  # click implements the command line interface.
+  "click>=8.0.0",
+]
+
+[project.scripts]
+my-dh-client = "my_dh_client.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
