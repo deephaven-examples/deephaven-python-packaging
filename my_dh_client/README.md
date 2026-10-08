@@ -42,10 +42,11 @@ my-dh-client data/sample.csv --verbose
 
 It reads the file locally with pyarrow, uploads it to the server, adds a `DoubleScore` computed column there, and binds the result as a table named `sample` (the file's stem). Open the server's IDE at `http://localhost:10000` to see the table, or pick a different name with `--name`.
 
-To connect to a different server, pass `--host` and `--port`. For a server that requires a token, pass `--auth-type` and put the token in the `DH_AUTH_TOKEN` environment variable so it stays out of your shell history:
+To connect to a different server, pass `--host` and `--port`. For a server that requires a token, pass `--auth-type` and put the token in the `DH_AUTH_TOKEN` environment variable. Set the variable without typing the token into a command, so it stays out of your shell history; for example, enter it at a hidden prompt with `read -s`:
 
 ```bash
-DH_AUTH_TOKEN=my-secret-key my-dh-client data/sample.csv \
+read -s DH_AUTH_TOKEN && export DH_AUTH_TOKEN
+my-dh-client data/sample.csv \
   --host dh.example.com \
   --auth-type io.deephaven.authentication.psk.PskAuthenticationHandler
 ```
