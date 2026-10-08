@@ -40,7 +40,7 @@ my-dh-toolkit-process data/batch --output output --verbose
 
 `my-dh-toolkit-query` processes a single CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes the results to the output directory. Both commands require a `Value` column and add `DoubleValue` and `IsHigh` columns.
 
-The commands bind their server to port 10000. If that port is already in use (for example, by Deephaven running in Docker), change the `port` value in [`query.py`](src/my_dh_toolkit/query.py) and [`process.py`](src/my_dh_toolkit/process.py).
+The commands bind their server to port 10000 by default. If that port is already in use (for example, by Deephaven running in Docker), pass a free port with `--port`.
 
 During development, the query command also runs via [`__main__.py`](src/my_dh_toolkit/__main__.py):
 
@@ -84,6 +84,7 @@ Process a single CSV file with Deephaven. The file must contain a numeric `Value
 
 **Options:**
 
+- `--port` - Port for the embedded Deephaven server. Default: `10000`.
 - `--verbose, -v` - Enable verbose output.
 
 ### my-dh-toolkit-process
@@ -97,6 +98,7 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 **Options:**
 
 - `--output, -o` - Output directory (default: `./output`). Must differ from the input directory.
+- `--port` - Port for the embedded Deephaven server. Default: `10000`.
 - `--verbose, -v` - Enable verbose output.
 
 ## Available functions

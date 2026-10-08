@@ -46,17 +46,18 @@ def my_dh_query(input_file: str, verbose: bool = False):
 
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True))
+@click.option("--port", default=10000, show_default=True, help="Port for the embedded Deephaven server")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
-def main(input_file: str, verbose: bool) -> None:
+def main(input_file: str, port: int, verbose: bool) -> None:
     """Process data with Deephaven."""
     try:
         from deephaven_server import Server
 
-        server = Server(port=10000, jvm_args=["-Xmx4g"])
+        server = Server(port=port, jvm_args=["-Xmx4g"])
         server.start()
     except Exception as e:
         raise click.ClickException(
-            f"Failed to start Deephaven server on port 10000: {e}"
+            f"Failed to start Deephaven server on port {port}: {e}"
         )
 
     my_dh_query(input_file, verbose)

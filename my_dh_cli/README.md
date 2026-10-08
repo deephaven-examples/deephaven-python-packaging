@@ -33,7 +33,7 @@ my-dh-query data/sample.csv --verbose
 
 It reads the file, adds a `DoubleScore` computed column, and reports the number of rows processed.
 
-The command binds its server to port 10000. If that port is already in use (for example, by Deephaven running in Docker), change the `port` value in [`cli.py`](src/my_dh_cli/cli.py).
+The command binds its server to port 10000 by default. If that port is already in use (for example, by Deephaven running in Docker), pass a free port with `--port`.
 
 During development, the package also runs without an entry point via [`__main__.py`](src/my_dh_cli/__main__.py):
 
@@ -53,6 +53,7 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 
 **Options:**
 
+- `--port` - Port for the embedded Deephaven server. Default: `10000`.
 - `--verbose, -v` - Enable verbose output.
 
 ## Requirements
