@@ -60,7 +60,7 @@ python -m my_dh_client data/sample.csv --verbose
 
 ### my-dh-client
 
-Upload a CSV file to a running Deephaven server and process it there. The file must contain a `Score` column.
+Upload a CSV file to a running Deephaven server and process it there. The file must contain a numeric `Score` column.
 
 **Arguments:**
 

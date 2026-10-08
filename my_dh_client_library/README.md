@@ -6,7 +6,7 @@ Compare it with [`my_dh_library`](../my_dh_library/), which provides the same fu
 
 - The dependency is `pydeephaven` rather than `deephaven-server`, so installing it does not pull in a JVM.
 - The functions take and return client-side `pydeephaven.Table` handles. Operations on a handle are sent to the server for execution.
-- `__init__.py` re-exports the public API, which is also what `my_dh_library` does. Here it is safe for a different reason: `pydeephaven` can be imported at any time, so there is no server to start before the import.
+- `__init__.py` re-exports the public API. `my_dh_library` does the same, and is able to do so because it does not define any commands. Here, there is no such constraint: `pydeephaven` can be imported at any time, so a client package can re-export freely even if it also defines commands.
 
 ## Installation
 

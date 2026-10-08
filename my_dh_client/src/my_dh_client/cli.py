@@ -30,7 +30,13 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
         )
 
     # This runs on the server. Only a handle to the result comes back to the client.
-    result = source.update(formulas=["DoubleScore = Score * 2"])
+    try:
+        result = source.update(formulas=["DoubleScore = Score * 2"])
+    except DHError:
+        raise click.ClickException(
+            f"Failed to compute DoubleScore for '{input_path.name}'. "
+            "The 'Score' column must be numeric."
+        )
 
     if verbose:
         click.echo(f"Processed {result.size} rows")
@@ -65,7 +71,8 @@ def main(input_file: str, host: str, port: int, auth_type: str, name: str, verbo
         )
     except DHError as e:
         raise click.ClickException(
-            f"Failed to connect to Deephaven server at {host}:{port}: {e}"
+            f"Failed to connect to Deephaven server at {host}:{port} ({e}). "
+            "Check that the server is running and that --auth-type matches its authentication."
         )
 
     # Session is a context manager: the connection closes when the block exits.

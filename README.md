@@ -170,7 +170,7 @@ my-dh-toolkit-query data/sample.csv --verbose
 my-dh-toolkit-process data/batch --output output --verbose
 ```
 
-`my-dh-toolkit-query` processes one CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes one result file per input to the output directory. Both commands validate that the input has a `Value` column and add `DoubleValue` and `IsHigh` columns by calling the library's `validate_columns` and `add_computed_columns`. Like `my-dh-query` in the previous example, each command starts its own Deephaven server.
+`my-dh-toolkit-query` processes one CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes one result file per input to the output directory. Both commands validate that the input has a `Value` column (which must be numeric) and add `DoubleValue` and `IsHigh` columns by calling the library's `validate_columns` and `add_computed_columns`. Like `my-dh-query` in the previous example, each command starts its own Deephaven server.
 
 ### Try the library
 

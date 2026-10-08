@@ -31,7 +31,13 @@ def my_dh_query(input_file: str, verbose: bool = False):
     except ValueError as e:
         raise click.ClickException(f"File '{input_path.name}': {e}")
 
-    result = add_computed_columns(source)
+    try:
+        result = add_computed_columns(source)
+    except Exception:
+        raise click.ClickException(
+            f"Failed to compute columns for '{input_path.name}'. "
+            "The 'Value' column must be numeric."
+        )
 
     if verbose:
         click.echo(f"Processed {result.size} rows")

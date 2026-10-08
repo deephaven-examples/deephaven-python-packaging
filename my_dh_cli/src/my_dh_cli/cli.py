@@ -30,7 +30,13 @@ def my_dh_query(input_file: str, verbose: bool = False):
             f"Available columns: {', '.join(column_names)}"
         )
 
-    result = source.update(formulas=["DoubleScore = Score * 2"])
+    try:
+        result = source.update(formulas=["DoubleScore = Score * 2"])
+    except Exception:
+        raise click.ClickException(
+            f"Failed to compute DoubleScore for '{input_path.name}'. "
+            "The 'Score' column must be numeric."
+        )
 
     if verbose:
         click.echo(f"Processed {result.size} rows")

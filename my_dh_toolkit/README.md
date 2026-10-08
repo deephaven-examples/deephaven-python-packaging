@@ -51,7 +51,7 @@ python -m my_dh_toolkit data/sample.csv --verbose
 ## Usage as a library
 
 > [!NOTE]
-> All Deephaven functionality requires a running server in the same Python process. Start the server before importing `deephaven` modules.
+> This package uses the server-side `deephaven` API, which requires a running server in the same Python process. Start the server before importing `deephaven` modules.
 
 From the repository root, start Python and use the library:
 
@@ -76,7 +76,7 @@ Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.
 
 ### my-dh-toolkit-query
 
-Process a single CSV file with Deephaven. The file must contain a `Value` column. The result has two additional columns, `DoubleValue` and `IsHigh`.
+Process a single CSV file with Deephaven. The file must contain a numeric `Value` column. The result has two additional columns, `DoubleValue` and `IsHigh`.
 
 **Arguments:**
 
@@ -88,7 +88,7 @@ Process a single CSV file with Deephaven. The file must contain a `Value` column
 
 ### my-dh-toolkit-process
 
-Batch process every CSV file in a directory. Each file must contain a `Value` column. Each output file, named `processed_<input name>`, has two additional columns, `DoubleValue` and `IsHigh`.
+Batch process every CSV file in a directory. Each file must contain a numeric `Value` column. Each output file, named `processed_<input name>`, has two additional columns, `DoubleValue` and `IsHigh`.
 
 **Arguments:**
 

@@ -19,7 +19,7 @@ pip install -e ./my_dh_library
 ## Usage
 
 > [!NOTE]
-> All Deephaven functionality requires a running server in the same Python process. Start the server before importing `deephaven` modules. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
+> This package uses the server-side `deephaven` API, which requires a running server in the same Python process. Start the server before importing `deephaven` modules. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
 
 From the repository root, start Python and use the library:
 

@@ -45,7 +45,7 @@ python -m my_dh_cli data/sample.csv --verbose
 
 ### my-dh-query
 
-Process a CSV file with Deephaven. The file must contain a `Score` column.
+Process a CSV file with Deephaven. The file must contain a numeric `Score` column.
 
 **Arguments:**
 

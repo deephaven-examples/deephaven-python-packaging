@@ -49,7 +49,13 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
         except ValueError as e:
             raise click.ClickException(f"File '{csv_file.name}': {e}")
 
-        processed = add_computed_columns(table)
+        try:
+            processed = add_computed_columns(table)
+        except Exception:
+            raise click.ClickException(
+                f"Failed to compute columns for '{csv_file.name}'. "
+                "The 'Value' column must be numeric."
+            )
 
         output_file = output_path / f"processed_{csv_file.name}"
         try:
