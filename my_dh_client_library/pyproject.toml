@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_dh_client_library"
+version = "0.1.0"
+description = "Reusable functions for a remote Deephaven server"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  # pydeephaven is the Python client. It connects to a running server and does not start one.
+  "pydeephaven>=0.35.0",
+  # pyarrow reads local CSV files. pydeephaven depends on it too, but the library
+  # imports it directly, so it is declared here rather than relied on transitively.
+  "pyarrow",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
