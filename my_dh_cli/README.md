@@ -25,7 +25,7 @@ pip install -e ./my_dh_cli
 
 ## Usage
 
-Run the installed command on a CSV file. The command starts its own Deephaven server, so no separate setup is needed:
+Run the installed command on a CSV file. The command starts its own Deephaven server, so no separate server is needed:
 
 ```bash
 my-dh-query data/sample.csv --verbose
@@ -59,6 +59,6 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 ## Requirements
 
 - Python 3.9 or later
-- Java 17 or later
+- Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
 - deephaven-server 0.35.0 or later (installed automatically as a dependency)
 - Click 8.0.0 or later (installed automatically as a dependency)

@@ -19,12 +19,12 @@ pip install -e ./my_dh_library
 ## Usage
 
 > [!NOTE]
-> This package uses the server-side `deephaven` API, which requires a running server in the same Python process. Start the server before importing `deephaven` modules. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
+> This package uses the server-side `deephaven` API, which requires a `deephaven_server.Server` in the same Python process. Create the `Server` before importing `deephaven` modules; creating it starts the JVM that `deephaven` needs. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
 
 From the repository root, start Python and use the library:
 
 ```python
-# A Deephaven server must be running before deephaven modules are imported.
+# Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
@@ -54,5 +54,5 @@ enhanced = add_computed_columns(filtered)
 ## Requirements
 
 - Python 3.9 or later
-- Java 17 or later
+- Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
 - deephaven-server 0.35.0 or later (installed automatically as a dependency)

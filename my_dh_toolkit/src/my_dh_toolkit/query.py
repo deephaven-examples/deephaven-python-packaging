@@ -4,8 +4,8 @@ import click
 def my_dh_query(input_file: str, verbose: bool = False):
     """Read a CSV file and add computed columns using the package's library functions."""
     # Imported here, not at module level: these modules import deephaven, which
-    # requires a running server. The entry point starts the server first, then
-    # calls this function.
+    # can only be imported after a Server has been created, which starts the JVM.
+    # The entry point creates and starts the server first, then calls this function.
     from deephaven import read_csv
     from my_dh_toolkit.queries import add_computed_columns
     from my_dh_toolkit.utils import validate_columns

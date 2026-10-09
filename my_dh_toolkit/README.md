@@ -31,7 +31,7 @@ pip install -e ./my_dh_toolkit
 
 ## Usage as command line tools
 
-Run the installed commands on the sample data. Each command starts its own Deephaven server, so no separate setup is needed:
+Run the installed commands on the sample data. Each command starts its own Deephaven server, so no separate server is needed:
 
 ```bash
 my-dh-toolkit-query data/sample.csv --verbose
@@ -51,12 +51,12 @@ python -m my_dh_toolkit data/sample.csv --verbose
 ## Usage as a library
 
 > [!NOTE]
-> This package uses the server-side `deephaven` API, which requires a running server in the same Python process. Start the server before importing `deephaven` modules.
+> This package uses the server-side `deephaven` API, which requires a `deephaven_server.Server` in the same Python process. Create the `Server` before importing `deephaven` modules; creating it starts the JVM that `deephaven` needs.
 
 From the repository root, start Python and use the library:
 
 ```python
-# A Deephaven server must be running before deephaven modules are imported.
+# Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
@@ -70,7 +70,7 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
 
-Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`), not from `my_dh_toolkit` itself. The package's [`__init__.py`](src/my_dh_toolkit/__init__.py) deliberately imports nothing that requires Deephaven, so that the commands can be started before a server is running.
+Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`), not from `my_dh_toolkit` itself. The package's [`__init__.py`](src/my_dh_toolkit/__init__.py) deliberately imports nothing that requires Deephaven, so that the commands can be launched before they create a `Server`.
 
 ## Command reference
 
@@ -117,6 +117,6 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 ## Requirements
 
 - Python 3.9 or later
-- Java 17 or later
+- Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
 - deephaven-server 0.35.0 or later (installed automatically as a dependency)
 - Click 8.0.0 or later (installed automatically as a dependency)

@@ -16,7 +16,7 @@ All five examples follow the [Python Packaging User Guide](https://packaging.pyt
 
 A packaged project can work with a Deephaven server in one of two ways, and the choice decides which Deephaven package it depends on:
 
-- **Embedded server.** The package depends on [`deephaven-server`](https://pypi.org/project/deephaven-server/), which starts a Deephaven server and its JVM inside the Python process. The code then uses the server-side `deephaven` API in that same process. This fits self-contained tools and batch jobs that should run without any other infrastructure. It comes with one rule that shapes how these packages are written: `deephaven` modules cannot be imported until the server has started. Examples 1 to 3 use this model.
+- **Embedded server.** The package depends on [`deephaven-server`](https://pypi.org/project/deephaven-server/), which starts a Deephaven server and its JVM inside the Python process. The code then uses the server-side `deephaven` API in that same process. This fits self-contained tools and batch jobs that should not depend on a separately running Deephaven server, though every machine that runs them needs Java. It comes with one rule that shapes how these packages are written: `deephaven` modules cannot be imported until a `deephaven_server.Server` has been created in the same process. Creating the `Server` starts the JVM; `server.start()` is a separate step that starts the server itself. Examples 1 to 3 use this model.
 - **Remote client.** The package depends on [`pydeephaven`](https://pypi.org/project/pydeephaven/), the Deephaven Python client, and connects to a server that is already running, such as one started with Docker. The client does not start a server, does not need Java, and can be imported at any time. It works with tables through a `Session`, and its table API mirrors the server-side one closely but is not identical. Examples 4 and 5 use this model.
 
 The packaging tooling is the same for both. What differs is the dependency and, for the embedded server, the import ordering.
@@ -32,7 +32,7 @@ The packaging tooling is the same for both. What differs is the dependency and, 
 
 - Python 3.9 or later.
 - pip.
-- For the embedded-server examples (1 to 3): Java 17 or later, required by `deephaven-server`, which those examples install as a dependency.
+- For the embedded-server examples (1 to 3): Java 17 or later with `JAVA_HOME` set, required by `deephaven-server`, which those examples install as a dependency. `pip` does not install Java.
 - For the client examples (4 and 5): a running Deephaven server to connect to. See [Start a server for the client examples](#start-a-server-for-the-client-examples).
 - The examples declare `deephaven-server` or `pydeephaven` 0.35.0 or later as their dependency. For the latest Deephaven version, see [deephaven.io](https://deephaven.io/).
 
@@ -78,10 +78,10 @@ pip install -e ./my_dh_library
 python
 ```
 
-A library built on `deephaven-server` needs a running server in the same process, so start one before importing `deephaven` modules:
+A library built on `deephaven-server` needs a `Server` in the same process, so create and start one before importing `deephaven` modules:
 
 ```python
-# A Deephaven server must be running before deephaven modules are imported.
+# Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
@@ -103,7 +103,7 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 ## Example 2: `my_dh_cli` — an embedded-server command line tool
 
-This example packages a Deephaven script as a terminal command. `pip install` creates a `my-dh-query` command that users run without writing any Python. The command starts its own server, so it works with no other infrastructure in place.
+This example packages a Deephaven script as a terminal command. `pip install` creates a `my-dh-query` command that users run without writing any Python. The command starts its own server, so it does not need a separately running Deephaven server. It does need Java on the machine that runs it.
 
 ```
 my_dh_cli/
@@ -132,12 +132,12 @@ pip install -e ./my_dh_cli
 my-dh-query data/sample.csv --verbose
 ```
 
-The command starts its own Deephaven server, reads the CSV file, adds a computed `DoubleScore` column, and reports the row count. No separate setup is needed.
+The command starts its own Deephaven server, reads the CSV file, adds a computed `DoubleScore` column, and reports the row count. No separate server is needed.
 
 ### What to study
 
 - [`pyproject.toml`](my_dh_cli/pyproject.toml): the `[project.scripts]` section maps the command name to a function.
-- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside the function that runs after the server has started, not at the top of the module, because `deephaven` modules can't be imported until a server is running.
+- [`cli.py`](my_dh_cli/src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside a function that runs after the `Server` has been created, not at the top of the module, because `deephaven` modules can't be imported until the `Server` has started the JVM.
 - [`__main__.py`](my_dh_cli/src/my_dh_cli/__main__.py): allows `python -m my_dh_cli data/sample.csv` as an alternative during development.
 
 ## Example 3: `my_dh_toolkit` — an embedded-server library and command line tools in one package
@@ -174,10 +174,10 @@ my-dh-toolkit-process data/batch --output output --verbose
 
 ### Try the library
 
-The same installation also provides the library. In a Python session, start a Deephaven server, then import and use the query functions:
+The same installation also provides the library. In a Python session, create and start a Deephaven server, then import and use the query functions:
 
 ```python
-# A Deephaven server must be running before deephaven modules are imported.
+# Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
 server = Server(port=10000, jvm_args=["-Xmx4g"])
 server.start()
@@ -195,10 +195,10 @@ print(f"{filtered.size} of {data.size} rows have Score > 75")
 
 - [`pyproject.toml`](my_dh_toolkit/pyproject.toml): a single `[project.scripts]` section defines both commands.
 - [`__init__.py`](my_dh_toolkit/src/my_dh_toolkit/__init__.py): deliberately contains no imports.
-  - Importing any `deephaven` module fails unless a Deephaven server is already running in the process.
-  - When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has started its server. If `__init__.py` imported the query functions, the import would reach `deephaven` and every command would fail at startup.
-  - For this reason, Python users import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`). `my_dh_library` can re-export its functions from `__init__.py` because it has no commands, so it is only imported after a server is running.
-- [`query.py`](my_dh_toolkit/src/my_dh_toolkit/query.py) and [`process.py`](my_dh_toolkit/src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside the function that runs after the server has started.
+  - Importing any `deephaven` module fails unless a `deephaven_server.Server` has already been created in the process.
+  - When a command such as `my-dh-toolkit-query` starts, Python imports the `my_dh_toolkit` package before the command has created its `Server`. If `__init__.py` imported the query functions, the import would reach `deephaven` and every command would fail at startup.
+  - For this reason, Python users import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`). `my_dh_library` can re-export its functions from `__init__.py` because it has no commands, so it is only imported after the calling program has created a `Server`.
+- [`query.py`](my_dh_toolkit/src/my_dh_toolkit/query.py) and [`process.py`](my_dh_toolkit/src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside a function that runs after the `Server` has been created.
 
 ## Start a server for the client examples
 
@@ -291,12 +291,12 @@ pip install -e ./my_dh_client
 my-dh-client data/sample.csv --verbose
 ```
 
-The command connects to `localhost:10000`, uploads the file, adds a computed `DoubleScore` column on the server, and binds the result as a table named `sample`. Open the IDE to see it. Pass `--host` and `--port` to reach a different server, `--name` to choose the table name, and `--auth-type` plus the `DH_AUTH_TOKEN` environment variable for a server that requires a token.
+The command connects to `localhost:10000`, uploads the file, adds a computed `DoubleScore` column on the server, and binds the result as a table named `sample`. Open the IDE to see it. Pass `--host` and `--port` to reach a different server, `--name` to choose the table name (it must be a valid Python identifier, so a file such as `my-scores.csv` needs one), and `--auth-type` plus the `DH_AUTH_TOKEN` environment variable for a server that requires a token.
 
 ### What to study
 
 - [`pyproject.toml`](my_dh_client/pyproject.toml): the same `[project.scripts]` pattern as `my_dh_cli`, with `pydeephaven` as the dependency.
-- [`cli.py`](my_dh_client/src/my_dh_client/cli.py): imports `pydeephaven` at the top of the module, where `my_dh_cli` has to delay its `deephaven` import until after the server starts. The command takes connection options instead of a port to bind, and reads the authentication token from the environment so it stays out of shell history. `Session` is used as a context manager so the connection closes when the command exits.
+- [`cli.py`](my_dh_client/src/my_dh_client/cli.py): imports `pydeephaven` at the top of the module, where `my_dh_cli` has to delay its `deephaven` import until after it creates a `Server`. The command checks that the table name (the file's stem, or `--name`) is a valid Python identifier before it connects. The command takes connection options instead of a port to bind, and reads the authentication token from the environment so it stays out of shell history. `Session` is used as a context manager so the connection closes when the command exits.
 - [`__main__.py`](my_dh_client/src/my_dh_client/__main__.py): allows `python -m my_dh_client data/sample.csv` as an alternative during development.
 
 ## Adapt an example for your own project
@@ -358,7 +358,7 @@ The examples above use editable installs (`pip install -e ./my_dh_cli`), which p
 
 - **Command not found after installation:** confirm the install succeeded (`pip show my_dh_cli`) and that the Python scripts directory is on `PATH`. Installing inside an activated virtual environment avoids most `PATH` issues.
 - **`Address already in use` when an embedded-server command or snippet starts:** examples 1 to 3 bind the Deephaven server to port 10000 by default. If another process already uses that port (for example, a Deephaven server running in Docker), pass a free port to the commands with `--port`, or change the `port` value in the `Server(...)` call in the library snippets.
-- **`deephaven` import errors:** the Deephaven server must be started (as shown in the embedded-server library examples) before `deephaven` modules are imported, and Java 17 or later must be available. This does not apply to `pydeephaven`, which can be imported at any time.
+- **`deephaven` import errors:** a `deephaven_server.Server` must be created (as shown in the embedded-server library examples) before `deephaven` modules are imported, and Java 17 or later must be available through `JAVA_HOME`. This does not apply to `pydeephaven`, which can be imported at any time.
 - **`failed to get the configuration constants` from a client example:** `pydeephaven` could not complete its first request to the server. Either no server is listening at the given host and port, or the server requires authentication the client did not provide. Check that the server is running and, if it uses a pre-shared key, pass the key as described in [Start a server for the client examples](#start-a-server-for-the-client-examples).
 - **Module not found after renaming:** check that the directory under `src/`, the `[project.scripts]` module paths, and the `import` statements all use the new package name, then reinstall with `pip install -e .`.
 

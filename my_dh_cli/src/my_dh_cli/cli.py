@@ -3,8 +3,9 @@ import click
 
 def my_dh_query(input_file: str, verbose: bool = False):
     """Read a CSV file and perform a simple query operation on the data."""
-    # Imported here, not at module level: deephaven requires a running server.
-    # The entry point starts the server first, then calls this function.
+    # Imported here, not at module level: deephaven can only be imported after a
+    # Server has been created, which starts the JVM. The entry point creates and
+    # starts the server first, then calls this function.
     from deephaven import read_csv
     from pathlib import Path
 

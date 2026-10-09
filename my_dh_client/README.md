@@ -6,7 +6,7 @@ Compare it with [`my_dh_cli`](../my_dh_cli/), which does similar work with an em
 
 - The dependency is `pydeephaven` rather than `deephaven-server`, so installing it does not pull in a JVM and the command starts quickly.
 - The command does not start a server. It needs one to connect to, and many copies of the command can run against the same server at once.
-- `pydeephaven` is imported at the top of `cli.py`. The embedded-server command has to delay its `deephaven` import until after the server starts; the client has no such constraint.
+- `pydeephaven` is imported at the top of `cli.py`. The embedded-server command has to delay its `deephaven` import until after it creates a `Server`; the client has no such constraint.
 
 The command is defined by the `[project.scripts]` entry point in [`pyproject.toml`](pyproject.toml):
 
@@ -72,7 +72,7 @@ Upload a CSV file to a running Deephaven server and process it there. The file m
 - `--host` - Deephaven server host. Default: `localhost`.
 - `--port` - Deephaven server port. Default: `10000`.
 - `--auth-type` - Authentication type. Default: `Anonymous`. For other types, set the token in the `DH_AUTH_TOKEN` environment variable.
-- `--name` - Name to bind the result table under on the server. Default: the input file's stem.
+- `--name` - Name to bind the result table under on the server. Must be a valid Python identifier. Default: the input file's stem, so a file such as `my-scores.csv` needs `--name`.
 - `--verbose, -v` - Enable verbose output.
 
 ## Requirements

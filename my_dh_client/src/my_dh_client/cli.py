@@ -59,6 +59,8 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
 def main(input_file: str, host: str, port: int, auth_type: str, name: str, verbose: bool) -> None:
     """Upload a CSV file to a running Deephaven server and process it there."""
     name = name or Path(input_file).stem
+    if not name.isidentifier():
+        raise click.BadParameter(f"'{name}' is not a valid Python identifier", param_hint="--name")
 
     try:
         session = Session(
