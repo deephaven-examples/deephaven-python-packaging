@@ -38,9 +38,23 @@ my-dh-toolkit-query data/sample.csv --verbose
 my-dh-toolkit-process data/batch --output output --verbose
 ```
 
-`my-dh-toolkit-query` processes a single CSV file. `my-dh-toolkit-process` processes every CSV file in a directory and writes the results to the output directory. Both commands require a `Value` column and add `DoubleValue` and `IsHigh` columns.
+`my-dh-toolkit-query` processes a single CSV file and prints the first five rows of the result. `my-dh-toolkit-process` processes every CSV file in a directory and writes the results to the output directory. Both commands require a `Value` column and add `DoubleValue` and `IsHigh` columns. After the server's startup log, `my-dh-toolkit-query` prints:
 
-The commands bind their server to port 10000 by default. If that port is already in use (for example, by Deephaven running in Docker), pass a free port with `--port`.
+```text
+Processing data/sample.csv...
+Processed 10 rows
+      Name|     Score|     Value|  Category|DoubleValue|    IsHigh
+----------+----------+----------+----------+-----------+----------
+Alice     |        85|       120|A         |        240|true
+Bob       |        92|       150|B         |        300|true
+Charlie   |        78|        95|A         |        190|false
+Diana     |        88|       110|C         |        220|true
+Eve       |        95|       180|B         |        360|true
+
+Processing complete!
+```
+
+The commands' servers listen on port 10001 by default, so they don't collide with a Deephaven server on the usual port 10000. Pass `--port` to choose another.
 
 During development, the query command also runs via [`__main__.py`](src/my_dh_toolkit/__main__.py):
 
@@ -50,15 +64,14 @@ python -m my_dh_toolkit data/sample.csv --verbose
 
 ## Usage as a library
 
-> [!NOTE]
-> This package uses the server-side `deephaven` API, which requires a `deephaven_server.Server` in the same Python process. Create the `Server` before importing `deephaven` modules; creating it starts the JVM that `deephaven` needs.
+In a standalone Python process, create a `Server` before importing `deephaven` or the library modules. Inside a running Deephaven server, skip the `Server` lines. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) in the repository README.
 
 From the repository root, start Python and use the library:
 
 ```python
 # Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
+server = Server(port=10001, jvm_args=["-Xmx4g"])
 server.start()
 
 # Import and use the installed library.
@@ -70,7 +83,7 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
 
-Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`), not from `my_dh_toolkit` itself. The package's [`__init__.py`](src/my_dh_toolkit/__init__.py) deliberately imports nothing that requires Deephaven, so that the commands can be launched before they create a `Server`.
+Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`), not from `my_dh_toolkit` itself. The package's [`__init__.py`](src/my_dh_toolkit/__init__.py) deliberately imports nothing that requires Deephaven, so that the commands can start before they create a `Server`.
 
 ## Command reference
 
@@ -84,7 +97,7 @@ Process a single CSV file with Deephaven. The file must contain a numeric `Value
 
 **Options:**
 
-- `--port` - Port for the embedded Deephaven server. Default: `10000`.
+- `--port` - Port for the embedded Deephaven server. Default: `10001`.
 - `--verbose, -v` - Enable verbose output.
 
 ### my-dh-toolkit-process
@@ -98,7 +111,7 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 **Options:**
 
 - `--output, -o` - Output directory (default: `./output`). Must differ from the input directory.
-- `--port` - Port for the embedded Deephaven server. Default: `10000`.
+- `--port` - Port for the embedded Deephaven server. Default: `10001`.
 - `--verbose, -v` - Enable verbose output.
 
 ## Available functions

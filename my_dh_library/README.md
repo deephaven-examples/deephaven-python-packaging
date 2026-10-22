@@ -2,6 +2,8 @@
 
 An example of packaging reusable Deephaven query functions as a library. Installing this package makes its functions importable from any Python code. There are no command line tools; this package is only ever imported.
 
+The package depends on `deephaven-core`, which provides the server-side `deephaven` API without a server of its own. It is meant to be installed into a Deephaven server's Python environment and imported from there. It can also be used from a standalone Python process that starts its own server.
+
 ## Installation
 
 From the repository root:
@@ -16,27 +18,50 @@ Or in editable mode for development:
 pip install -e ./my_dh_library
 ```
 
+Install it into the same environment as the Deephaven server that will use it. For Docker, install it in a custom image based on `ghcr.io/deephaven/server`; see [Install and use Python packages](https://deephaven.io/core/docs/how-to-guides/install-and-use-python-packages/).
+
 ## Usage
 
-> [!NOTE]
-> This package uses the server-side `deephaven` API, which requires a `deephaven_server.Server` in the same Python process. Create the `Server` before importing `deephaven` modules; creating it starts the JVM that `deephaven` needs. The snippet below binds the server to port 10000; if that port is already in use (for example, by Deephaven running in Docker), change the `port` value.
+### Inside a Deephaven server
 
-From the repository root, start Python and use the library:
+In the server's console or a script it runs, import the functions directly:
 
 ```python
-# Creating a Server starts the JVM, which deephaven modules need at import time.
-from deephaven_server import Server
-server = Server(port=10000, jvm_args=["-Xmx4g"])
-server.start()
-
-# Import and use the installed library.
-from my_dh_library.queries import filter_by_threshold, add_computed_columns
+from my_dh_library import filter_by_threshold, add_computed_columns
 from deephaven import read_csv
 
 data = read_csv("data/sample.csv")
 filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
+
+To try this locally, install a server next to the library and open the URL it prints:
+
+```bash
+pip install -e ./my_dh_library deephaven-server
+deephaven server --port 10001
+```
+
+### In a standalone Python process
+
+Outside a server, install `deephaven-server` as well, and create a `Server` before importing `deephaven` or this library. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) in the repository README for why.
+
+```python
+# Creating a Server starts the JVM, which deephaven modules need at import time.
+from deephaven_server import Server
+server = Server(port=10001, jvm_args=["-Xmx4g"])
+server.start()
+
+# Import and use the installed library.
+from my_dh_library import filter_by_threshold
+from deephaven import read_csv
+
+data = read_csv("data/sample.csv")
+filtered = filter_by_threshold(data, "Score", 75.0)
+print(f"{filtered.size} of {data.size} rows have Score > 75")
+```
+
+After the server's startup log, this prints `9 of 10 rows have Score > 75`.
 
 ## Available functions
 
@@ -54,5 +79,5 @@ enhanced = add_computed_columns(filtered)
 ## Requirements
 
 - Python 3.9 or later
-- Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
-- deephaven-server 0.35.0 or later (installed automatically as a dependency)
+- deephaven-core 0.35.0 or later (installed automatically as a dependency, and already present in a Deephaven server)
+- For standalone use only: deephaven-server, and Java 17 or later with `JAVA_HOME` set (neither is installed automatically)

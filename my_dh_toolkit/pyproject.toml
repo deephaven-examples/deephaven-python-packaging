@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,8 @@ description = "Deephaven library and CLI tools"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
+  # deephaven-server lets the commands start their own server. It also provides the
+  # deephaven module through its deephaven-core dependency.
   "deephaven-server>=0.35.0",
   # click implements the command line interfaces.
   "click>=8.0.0",

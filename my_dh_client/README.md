@@ -1,6 +1,6 @@
 # My Deephaven Client
 
-An example of packaging a [`pydeephaven`](https://pypi.org/project/pydeephaven/) client program as a command line tool. Installing this package creates one terminal command, `my-dh-client`, which connects to a Deephaven server that is already running, uploads a CSV file to it, processes the data there, and binds the result under a name so it appears in the server's IDE.
+An example of packaging a [`pydeephaven`](https://pypi.org/project/pydeephaven/) client program as a command line tool. Installing this package creates one terminal command, `my-dh-client-query`, which connects to a Deephaven server that is already running, uploads a CSV file to it, processes the data there, and binds the result under a name so it appears in the server's IDE.
 
 Compare it with [`my_dh_cli`](../my_dh_cli/), which does similar work with an embedded server. The two differ in three ways:
 
@@ -12,7 +12,7 @@ The command is defined by the `[project.scripts]` entry point in [`pyproject.tom
 
 ```toml
 [project.scripts]
-my-dh-client = "my_dh_client.cli:main"
+my-dh-client-query = "my_dh_client.cli:main"
 ```
 
 ## Installation
@@ -37,16 +37,24 @@ pip install -e ./my_dh_client
 Run the installed command on a CSV file:
 
 ```bash
-my-dh-client data/sample.csv --verbose
+my-dh-client-query data/sample.csv --verbose
 ```
 
-It reads the file locally with pyarrow, uploads it to the server, adds a `DoubleScore` computed column there, and binds the result as a table named `sample` (the file's stem). Open the server's IDE at `http://localhost:10000` to see the table, or pick a different name with `--name`.
+It reads the file locally with pyarrow, uploads it to the server, adds a `DoubleScore` computed column there, and binds the result as a table named `sample` (the file's stem):
+
+```text
+Uploading data/sample.csv...
+Processed 10 rows
+Bound result table 'sample' on localhost:10000
+```
+
+Open the server's IDE at `http://localhost:10000` to see the table, or pick a different name with `--name`.
 
 To connect to a different server, pass `--host` and `--port`. For a server that requires a token, pass `--auth-type` and put the token in the `DH_AUTH_TOKEN` environment variable. Set the variable without typing the token into a command, so it stays out of your shell history; for example, enter it at a hidden prompt with `read -s`:
 
 ```bash
 read -s DH_AUTH_TOKEN && export DH_AUTH_TOKEN
-my-dh-client data/sample.csv \
+my-dh-client-query data/sample.csv \
   --host dh.example.com \
   --auth-type io.deephaven.authentication.psk.PskAuthenticationHandler
 ```
@@ -59,7 +67,7 @@ python -m my_dh_client data/sample.csv --verbose
 
 ## Command reference
 
-### my-dh-client
+### my-dh-client-query
 
 Upload a CSV file to a running Deephaven server and process it there. The file must contain a numeric `Score` column.
 

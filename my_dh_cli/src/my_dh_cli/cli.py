@@ -1,7 +1,7 @@
 import click
 
 
-def my_dh_query(input_file: str, verbose: bool = False):
+def run_query(input_file: str, verbose: bool = False):
     """Read a CSV file and perform a simple query operation on the data."""
     # Imported here, not at module level: deephaven can only be imported after a
     # Server has been created, which starts the JVM. The entry point creates and
@@ -10,11 +10,6 @@ def my_dh_query(input_file: str, verbose: bool = False):
     from pathlib import Path
 
     input_path = Path(input_file)
-    
-    if not input_path.exists():
-        raise click.ClickException(f"Input file does not exist: '{input_path}'")
-    if not input_path.is_file():
-        raise click.ClickException(f"Input path is not a file: '{input_path}'")
 
     if verbose:
         click.echo(f"Processing {input_file}...")
@@ -46,8 +41,8 @@ def my_dh_query(input_file: str, verbose: bool = False):
 
 
 @click.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.option("--port", default=10000, show_default=True, help="Port for the embedded Deephaven server")
+@click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
+@click.option("--port", default=10001, show_default=True, help="Port for the embedded Deephaven server")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def main(input_file: str, port: int, verbose: bool) -> None:
     """Process data with Deephaven."""
@@ -61,7 +56,8 @@ def main(input_file: str, port: int, verbose: bool) -> None:
             f"Failed to start Deephaven server on port {port}: {e}"
         )
 
-    my_dh_query(input_file, verbose)
+    result = run_query(input_file, verbose)
+    click.echo(result.to_string(num_rows=5))
     click.echo("Processing complete!")
 
 

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-my-dh-client = "my_dh_client.cli:main"
+my-dh-client-query = "my_dh_client.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,12 +1,12 @@
 # My Deephaven CLI
 
-An example of packaging a Deephaven script as a command line tool. Installing this package creates one terminal command, `my-dh-query`. No library code is exposed; the package is used only through that command, so no Python needs to be written to use it.
+An example of packaging a Deephaven script as a command line tool. Installing this package creates one terminal command, `my-dh-cli-query`. No library code is exposed; the package is used only through that command, so no Python needs to be written to use it.
 
 The command is defined by the `[project.scripts]` entry point in [`pyproject.toml`](pyproject.toml):
 
 ```toml
 [project.scripts]
-my-dh-query = "my_dh_cli.cli:main"
+my-dh-cli-query = "my_dh_cli.cli:main"
 ```
 
 ## Installation
@@ -28,12 +28,28 @@ pip install -e ./my_dh_cli
 Run the installed command on a CSV file. The command starts its own Deephaven server, so no separate server is needed:
 
 ```bash
-my-dh-query data/sample.csv --verbose
+my-dh-cli-query data/sample.csv --verbose
 ```
 
-It reads the file, adds a `DoubleScore` computed column, and reports the number of rows processed.
+It reads the file, adds a `DoubleScore` computed column, and prints the first five rows. After the server's startup log, the output is:
 
-The command binds its server to port 10000 by default. If that port is already in use (for example, by Deephaven running in Docker), pass a free port with `--port`.
+```text
+Processing data/sample.csv...
+Processed 10 rows
+      Name|     Score|     Value|  Category|DoubleScore
+----------+----------+----------+----------+-----------
+Alice     |        85|       120|A         |        170
+Bob       |        92|       150|B         |        184
+Charlie   |        78|        95|A         |        156
+Diana     |        88|       110|C         |        176
+Eve       |        95|       180|B         |        190
+
+Processing complete!
+```
+
+The server listens on port 10001 by default, so it doesn't collide with a Deephaven server on the usual port 10000. Pass `--port` to choose another.
+
+The command imports `deephaven` inside a function that runs after it creates the `Server`, rather than at the top of `cli.py`. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) in the repository README.
 
 During development, the package also runs without an entry point via [`__main__.py`](src/my_dh_cli/__main__.py):
 
@@ -43,7 +59,7 @@ python -m my_dh_cli data/sample.csv --verbose
 
 ## Command reference
 
-### my-dh-query
+### my-dh-cli-query
 
 Process a CSV file with Deephaven. The file must contain a numeric `Score` column.
 
@@ -53,7 +69,7 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 
 **Options:**
 
-- `--port` - Port for the embedded Deephaven server. Default: `10000`.
+- `--port` - Port for the embedded Deephaven server. Default: `10001`.
 - `--verbose, -v` - Enable verbose output.
 
 ## Requirements

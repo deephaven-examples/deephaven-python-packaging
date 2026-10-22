@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,8 +9,10 @@ description = "Reusable Deephaven query functions"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-  # deephaven-server also provides the deephaven module (through its deephaven-core dependency).
-  "deephaven-server>=0.35.0",
+  # deephaven-core provides the deephaven module without a server. The program that
+  # imports this library supplies the JVM: either a Deephaven server it is installed
+  # into, or a deephaven_server.Server the program creates itself.
+  "deephaven-core>=0.35.0",
 ]
 
 [tool.setuptools.packages.find]

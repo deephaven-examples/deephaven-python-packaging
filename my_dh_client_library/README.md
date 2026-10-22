@@ -1,12 +1,12 @@
 # My Deephaven Client Library
 
-An example of packaging reusable query functions that work with a Deephaven server over the network. The package depends on [`pydeephaven`](https://pypi.org/project/pydeephaven/), the Deephaven Python client, instead of `deephaven-server`. It does not start a server; the calling program connects to one that is already running and passes the connection in. There are no command line tools; this package is only ever imported.
+An example of packaging reusable query functions that work with a Deephaven server over the network. The package depends on [`pydeephaven`](https://pypi.org/project/pydeephaven/), the Deephaven Python client, instead of the server-side `deephaven-core`. It does not need to run inside a server or start one; the calling program connects to one that is already running and passes the connection in. There are no command line tools; this package is only ever imported.
 
-Compare it with [`my_dh_library`](../my_dh_library/), which provides the same functions for an embedded server. The two differ in three ways:
+Compare it with [`my_dh_library`](../my_dh_library/), which provides the same functions for code running inside a Deephaven server. The two differ in three ways:
 
-- The dependency is `pydeephaven` rather than `deephaven-server`, so installing it does not pull in a JVM.
+- The dependency is `pydeephaven` rather than `deephaven-core`, so the library runs in any Python process and needs no JVM.
 - The functions take and return client-side `pydeephaven.Table` handles. Operations on a handle are sent to the server for execution.
-- `__init__.py` re-exports the public API. `my_dh_library` does the same, and is able to do so because it does not define any commands. Here, there is no such constraint: `pydeephaven` can be imported at any time, so a client package can re-export freely even if it also defines commands.
+- `__init__.py` re-exports the public API. `my_dh_library` does the same, but only because it does not define any commands and is only imported where the Deephaven JVM is already running. Here, there is no such constraint: `pydeephaven` can be imported at any time, so a client package can re-export freely even if it also defines commands.
 
 ## Installation
 
@@ -41,7 +41,7 @@ with Session(host="localhost", port=10000) as session:
     print(f"{enhanced.size} of {data.size} rows have Score > 75")
 ```
 
-The `enhanced` table is now bound on the server, so it appears in the server's IDE and other clients can open it with `session.open_table("enhanced")`. To bring results back into the client process, call `enhanced.to_arrow()` and work with the result as a pyarrow table.
+This prints `9 of 10 rows have Score > 75`. The `enhanced` table is now bound on the server, so it appears in the server's IDE and other clients can open it with `session.open_table("enhanced")`. To bring results back into the client process, call `enhanced.to_arrow()` and work with the result as a pyarrow table.
 
 ## Available functions
 
