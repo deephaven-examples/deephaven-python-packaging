@@ -70,11 +70,16 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `--verbose, -v` - Enable verbose output.
+- `-v, --verbose` - Print progress messages: the file being processed and the number of rows processed.
+
+## What to study
+
+- [`pyproject.toml`](pyproject.toml): the `[project.scripts]` section maps the command name to a function.
+- [`cli.py`](src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside a function that runs after it creates the `Server`, not at the top of the module. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module).
 
 ## Requirements
 
 - Python 3.9 or later
 - Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
-- deephaven-server 0.35.0 or later (installed automatically as a dependency)
+- deephaven-server (installed automatically as a dependency; see [`pyproject.toml`](pyproject.toml) for the minimum version)
 - Click 8.0.0 or later (installed automatically as a dependency)

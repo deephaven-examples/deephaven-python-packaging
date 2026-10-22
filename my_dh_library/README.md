@@ -35,7 +35,9 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
 
-To try this locally, install a server next to the library and open the URL it prints:
+`filtered` and `enhanced` appear in the IDE, each with 9 of the 10 rows. There is no `Server` to create, because the code already runs inside one.
+
+To try this locally, install a server next to the library and open the URL it prints, which includes its login key:
 
 ```bash
 pip install -e ./my_dh_library deephaven-server
@@ -76,8 +78,14 @@ After the server's startup log, this prints `9 of 10 rows have Score > 75`.
 - `validate_columns(table, required_columns)` - Check if a table has all required columns.
 - `get_table_info(table)` - Get basic information about a table.
 
+## What to study
+
+- [`pyproject.toml`](pyproject.toml): the `dependencies` list declares `deephaven-core`. A Deephaven server already has it, so installing the library into a server adds nothing else and doesn't change the server's Deephaven version. `[tool.setuptools.packages.find]` points setuptools at `src/`.
+- [`queries.py`](src/my_dh_library/queries.py): plain functions that take and return Deephaven tables.
+- [`__init__.py`](src/my_dh_library/__init__.py): re-exports the public functions. Because of this, even `import my_dh_library` needs a running JVM. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module).
+
 ## Requirements
 
 - Python 3.9 or later
-- deephaven-core 0.35.0 or later (installed automatically as a dependency, and already present in a Deephaven server)
+- deephaven-core (installed automatically as a dependency, and already present in a Deephaven server; see [`pyproject.toml`](pyproject.toml) for the minimum version)
 - For standalone use only: deephaven-server, and Java 17 or later with `JAVA_HOME` set (neither is installed automatically)

@@ -71,7 +71,7 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.argument("directory", type=click.Path(exists=True, file_okay=False))
 @click.option("--output", "-o", default="./output", show_default=True, help="Output directory")
 @click.option("--port", default=10001, show_default=True, help="Port for the embedded Deephaven server")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+@click.option("--verbose", "-v", is_flag=True, help="Print the number of files found and each file's name, row count, and output file")
 def main(directory: str, output: str, port: int, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
     try:

@@ -6,7 +6,7 @@ Compare it with [`my_dh_library`](../my_dh_library/), which provides the same fu
 
 - The dependency is `pydeephaven` rather than `deephaven-core`, so the library runs in any Python process and needs no JVM.
 - The functions take and return client-side `pydeephaven.Table` handles. Operations on a handle are sent to the server for execution.
-- `__init__.py` re-exports the public API. `my_dh_library` does the same, but only because it does not define any commands and is only imported where the Deephaven JVM is already running. Here, there is no such constraint: `pydeephaven` can be imported at any time, so a client package can re-export freely even if it also defines commands.
+- `__init__.py` re-exports the public API, as in `my_dh_library`. A client package can do this even if it later adds commands, because `pydeephaven` can be imported at any time.
 
 ## Installation
 
@@ -27,7 +27,7 @@ pip install -e ./my_dh_client_library
 > [!NOTE]
 > A Deephaven server must already be running. The snippet below connects to one on `localhost:10000` with anonymous authentication. See [Start a server for the client examples](../README.md#start-a-server-for-the-client-examples) in the repository README for ways to start one, and for connecting to a server that uses a pre-shared key.
 
-From the repository root, start Python and use the library:
+From the repository root, start Python and use the library. The calling program creates the [`Session`](https://deephaven.io/core/client-api/python/code/pydeephaven.session.html#pydeephaven.session.Session) and passes it to the library's functions. The `Session` reference lists the connection and authentication options, such as `host`, `port`, `auth_type`, and `auth_token`, along with the methods the library uses, including `import_table` and `bind_table`.
 
 ```python
 from pydeephaven import Session
@@ -58,8 +58,13 @@ This prints `9 of 10 rows have Score > 75`. The `enhanced` table is now bound on
 - `validate_columns(table, required_columns)` - Check if a table has all required columns.
 - `get_table_info(table)` - Get basic information about a table.
 
+## What to study
+
+- [`queries.py`](src/my_dh_client_library/queries.py): compare it with the [`my_dh_library` version](../my_dh_library/src/my_dh_library/queries.py). The query strings and table operations are the same, but the operations run on the server and only a handle comes back. `publish` wraps `session.bind_table`, which is how a client gives a table a name on the server.
+- [`utils.py`](src/my_dh_client_library/utils.py): `upload_csv` reads a CSV file locally with pyarrow and sends it with `session.import_table`, because the server cannot see the client's files. Column names come from `table.schema.names` rather than `table.columns`.
+
 ## Requirements
 
 - Python 3.9 or later
-- pydeephaven 0.35.0 or later (installed automatically as a dependency)
+- pydeephaven (installed automatically as a dependency; see [`pyproject.toml`](pyproject.toml) for the minimum version)
 - A running Deephaven server to connect to. Java is not required on the client machine.

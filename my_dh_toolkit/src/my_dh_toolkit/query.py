@@ -43,7 +43,7 @@ def run_query(input_file: str, verbose: bool = False):
 @click.command()
 @click.argument("input_file", type=click.Path(exists=True, dir_okay=False))
 @click.option("--port", default=10001, show_default=True, help="Port for the embedded Deephaven server")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+@click.option("--verbose", "-v", is_flag=True, help="Print the file being processed and the number of rows processed")
 def main(input_file: str, port: int, verbose: bool) -> None:
     """Process data with Deephaven."""
     try:

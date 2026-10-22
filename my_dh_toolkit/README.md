@@ -7,6 +7,8 @@ An example of one package with two interfaces:
 
 The commands call the package's own library functions (`validate_columns` and `add_computed_columns`), so Python users and terminal users share one implementation.
 
+`queries.py` and `utils.py` are copies of the `my_dh_library` modules rather than a dependency on that package. The duplication is deliberate: it keeps each example self-contained, so you can copy any one of them on its own.
+
 The commands are defined by the `[project.scripts]` entry points in [`pyproject.toml`](pyproject.toml):
 
 ```toml
@@ -54,6 +56,19 @@ Eve       |        95|       180|B         |        360|true
 Processing complete!
 ```
 
+And `my-dh-toolkit-process` prints:
+
+```text
+Found 3 CSV files to process
+Processing file1.csv...
+  Processed 3 rows -> processed_file1.csv
+Processing file2.csv...
+  Processed 3 rows -> processed_file2.csv
+Processing file3.csv...
+  Processed 4 rows -> processed_file3.csv
+Batch processing complete!
+```
+
 The commands' servers listen on port 10001 by default, so they don't collide with a Deephaven server on the usual port 10000. Pass `--port` to choose another.
 
 During development, the query command also runs via [`__main__.py`](src/my_dh_toolkit/__main__.py):
@@ -64,7 +79,7 @@ python -m my_dh_toolkit data/sample.csv --verbose
 
 ## Usage as a library
 
-In a standalone Python process, create a `Server` before importing `deephaven` or the library modules. Inside a running Deephaven server, skip the `Server` lines. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) in the repository README.
+In a standalone Python process, create a `Server` before importing `deephaven` or the library modules. Inside a running Deephaven server, skip the `Server` lines. Import the functions from their submodules, as shown, not from `my_dh_toolkit` itself ([why](#what-to-study)).
 
 From the repository root, start Python and use the library:
 
@@ -83,8 +98,6 @@ filtered = filter_by_threshold(data, "Score", 75.0)
 enhanced = add_computed_columns(filtered)
 ```
 
-Import the library from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`), not from `my_dh_toolkit` itself. The package's [`__init__.py`](src/my_dh_toolkit/__init__.py) deliberately imports nothing that requires Deephaven, so that the commands can start before they create a `Server`.
-
 ## Command reference
 
 ### my-dh-toolkit-query
@@ -98,7 +111,7 @@ Process a single CSV file with Deephaven. The file must contain a numeric `Value
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `--verbose, -v` - Enable verbose output.
+- `-v, --verbose` - Print progress messages: the file being processed and the number of rows processed.
 
 ### my-dh-toolkit-process
 
@@ -110,9 +123,9 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 
 **Options:**
 
-- `--output, -o` - Output directory (default: `./output`). Must differ from the input directory.
+- `-o, --output` - Output directory. Must differ from the input directory. Default: `./output`.
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `--verbose, -v` - Enable verbose output.
+- `-v, --verbose` - Print progress messages: the number of CSV files found and, for each file, its name, row count, and output file.
 
 ## Available functions
 
@@ -127,9 +140,15 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 - `validate_columns(table, required_columns)` - Check if a table has all required columns.
 - `get_table_info(table)` - Get basic information about a table.
 
+## What to study
+
+- [`pyproject.toml`](pyproject.toml): a single `[project.scripts]` section defines both commands.
+- [`__init__.py`](src/my_dh_toolkit/__init__.py): deliberately imports nothing that requires Deephaven, so that the commands can start before they create a `Server`. This is why the library is imported from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`). See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) for the failure this avoids.
+- [`query.py`](src/my_dh_toolkit/query.py) and [`process.py`](src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside a function that runs after the `Server` has been created.
+
 ## Requirements
 
 - Python 3.9 or later
 - Java 17 or later, with `JAVA_HOME` set (not installed by `pip`)
-- deephaven-server 0.35.0 or later (installed automatically as a dependency)
+- deephaven-server (installed automatically as a dependency; see [`pyproject.toml`](pyproject.toml) for the minimum version)
 - Click 8.0.0 or later (installed automatically as a dependency)

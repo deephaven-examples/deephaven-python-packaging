@@ -55,7 +55,7 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
     help="Authentication type. Set DH_AUTH_TOKEN in the environment for types that need a token.",
 )
 @click.option("--name", default=None, help="Name to bind the result under on the server [default: file stem]")
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+@click.option("--verbose", "-v", is_flag=True, help="Print the file being uploaded and the number of rows processed")
 def main(input_file: str, host: str, port: int, auth_type: str, name: str, verbose: bool) -> None:
     """Upload a CSV file to a running Deephaven server and process it there."""
     name = name or Path(input_file).stem
