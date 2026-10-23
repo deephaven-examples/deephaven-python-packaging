@@ -80,8 +80,8 @@ After the server's startup log, this prints `9 of 10 rows have Score > 75`.
 
 ## What to study
 
-- [`pyproject.toml`](pyproject.toml): the `dependencies` list declares `deephaven-core`. A Deephaven server already has it, so installing the library into a server adds nothing else and doesn't change the server's Deephaven version. `[tool.setuptools.packages.find]` points setuptools at `src/`.
-- [`queries.py`](src/my_dh_library/queries.py): plain functions that take and return Deephaven tables.
+- [`pyproject.toml`](pyproject.toml): declares `deephaven-core` as the only dependency. A Deephaven server already has it, so installing the library into a server adds nothing else and doesn't change the server's Deephaven version. `[tool.setuptools.packages.find]` points setuptools at `src/`.
+- [`queries.py`](src/my_dh_library/queries.py): defines plain functions that take and return Deephaven tables.
 - [`__init__.py`](src/my_dh_library/__init__.py): re-exports the public functions. Because of this, even `import my_dh_library` needs a running JVM. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module).
 
 ## Requirements

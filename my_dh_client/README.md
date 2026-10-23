@@ -32,7 +32,7 @@ pip install -e ./my_dh_client
 ## Usage
 
 > [!NOTE]
-> A Deephaven server must already be running. By default the command connects to `localhost:10000` with anonymous authentication. See [Start a server for the client examples](../README.md#start-a-server-for-the-client-examples) in the repository README for ways to start one, and [Authentication](#authentication) below to connect to a server that requires a key or password.
+> A Deephaven server must already be running. By default the command connects to `localhost:10000` with anonymous authentication. See [Start a server for Examples 4 and 5](../README.md#start-a-server-for-examples-4-and-5) in the repository README for ways to start one, and [Authentication](#authentication) below to connect to a server that requires a key or password.
 
 Run the installed command on a CSV file:
 
@@ -121,15 +121,15 @@ Upload a CSV file to a running Deephaven server and process it there. The file m
 - `--port` - Deephaven server port. Default: `10000`.
 - `--auth-type` - Authentication type. For types other than `Anonymous`, set the token in the `DH_AUTH_TOKEN` environment variable. See [Authentication](#authentication) for the values and token formats. Default: `Anonymous`.
 - `--name` - Name to bind the result table under on the server. Must be a valid Python identifier, so a file such as `my-scores.csv` needs `--name`. Default: the input file's stem.
-- `-v, --verbose` - Print progress messages: the file being uploaded and the number of rows processed.
+- `-v, --verbose` - Verbose output, listing the file being uploaded and the number of rows processed.
 
 ## What to study
 
-- [`cli.py`](src/my_dh_client/cli.py): the command checks that the table name (the file's stem, or `--name`) is a valid Python identifier before it connects. It takes connection options instead of a port to bind, and reads the authentication token from the environment. `Session` is used as a context manager, so the connection closes when the command exits.
+- [`cli.py`](src/my_dh_client/cli.py): checks that the table name (the file's stem, or `--name`) is a valid Python identifier before it connects. It takes connection options instead of a port to bind, and reads the authentication token from the environment. `Session` is used as a context manager, so the connection closes when the command exits.
 
 ## Requirements
 
 - Python 3.9 or later
 - pydeephaven (installed automatically as a dependency; see [`pyproject.toml`](pyproject.toml) for the minimum version)
 - Click 8.0.0 or later (installed automatically as a dependency)
-- A running Deephaven server to connect to. Java is not required on the client machine.
+- A running Deephaven server to connect to (Java is not required on the client machine)

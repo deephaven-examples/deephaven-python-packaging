@@ -111,7 +111,7 @@ Process a single CSV file with Deephaven. The file must contain a numeric `Value
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `-v, --verbose` - Print progress messages: the file being processed and the number of rows processed.
+- `-v, --verbose` - Verbose output, listing the file being processed and the number of rows processed.
 
 ### my-dh-toolkit-process
 
@@ -125,7 +125,7 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 
 - `-o, --output` - Output directory. Must differ from the input directory. Default: `./output`.
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `-v, --verbose` - Print progress messages: the number of CSV files found and, for each file, its name, row count, and output file.
+- `-v, --verbose` - Verbose output, listing the number of CSV files found and, for each file, its name, row count, and output file.
 
 ## Available functions
 
@@ -142,9 +142,9 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 
 ## What to study
 
-- [`pyproject.toml`](pyproject.toml): a single `[project.scripts]` section defines both commands.
+- [`pyproject.toml`](pyproject.toml): defines both commands in a single `[project.scripts]` section.
 - [`__init__.py`](src/my_dh_toolkit/__init__.py): deliberately imports nothing that requires Deephaven, so that the commands can start before they create a `Server`. This is why the library is imported from its submodules (`my_dh_toolkit.queries`, `my_dh_toolkit.utils`). See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) for the failure this avoids.
-- [`query.py`](src/my_dh_toolkit/query.py) and [`process.py`](src/my_dh_toolkit/process.py): one module per command, each defining the command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside a function that runs after the `Server` has been created.
+- [`query.py`](src/my_dh_toolkit/query.py) and [`process.py`](src/my_dh_toolkit/process.py): each define one command's `main()`. Like `my_dh_cli`, both import `deephaven` and the library modules inside a function that runs after the `Server` has been created.
 
 ## Requirements
 

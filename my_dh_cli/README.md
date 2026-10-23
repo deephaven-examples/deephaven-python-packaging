@@ -49,8 +49,6 @@ Processing complete!
 
 The server listens on port 10001 by default, so it doesn't collide with a Deephaven server on the usual port 10000. Pass `--port` to choose another.
 
-The command imports `deephaven` inside a function that runs after it creates the `Server`, rather than at the top of `cli.py`. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module) in the repository README.
-
 During development, the package also runs without an entry point via [`__main__.py`](src/my_dh_cli/__main__.py):
 
 ```bash
@@ -70,12 +68,12 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
-- `-v, --verbose` - Print progress messages: the file being processed and the number of rows processed.
+- `-v, --verbose` - Verbose output, listing the file being processed and the number of rows processed.
 
 ## What to study
 
-- [`pyproject.toml`](pyproject.toml): the `[project.scripts]` section maps the command name to a function.
-- [`cli.py`](src/my_dh_cli/cli.py): a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside a function that runs after it creates the `Server`, not at the top of the module. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module).
+- [`pyproject.toml`](pyproject.toml): maps the command name to a function in its `[project.scripts]` section.
+- [`cli.py`](src/my_dh_cli/cli.py): defines a [Click](https://click.palletsprojects.com/) command that starts the Deephaven server itself, so it works as a standalone tool. It imports `deephaven` inside a function that runs after it creates the `Server`, not at the top of the module. See [Import order for the `deephaven` module](../README.md#import-order-for-the-deephaven-module).
 
 ## Requirements
 

@@ -6,11 +6,7 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
     """Process multiple CSV files from a directory."""
     input_path = Path(directory)
     output_path = Path(output_dir)
-    
-    if not input_path.exists():
-        raise click.ClickException(f"Input directory does not exist: '{input_path}'")
-    if not input_path.is_dir():
-        raise click.ClickException(f"Input path is not a directory: '{input_path}'")
+
     if input_path.resolve() == output_path.resolve():
         raise click.ClickException(
             f"Input and output directories must be different: '{input_path}'"
@@ -71,7 +67,7 @@ def batch_process(directory: str, output_dir: str, verbose: bool = False) -> Non
 @click.argument("directory", type=click.Path(exists=True, file_okay=False))
 @click.option("--output", "-o", default="./output", show_default=True, help="Output directory")
 @click.option("--port", default=10001, show_default=True, help="Port for the embedded Deephaven server")
-@click.option("--verbose", "-v", is_flag=True, help="Print the number of files found and each file's name, row count, and output file")
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output, listing the number of CSV files found and, for each file, its name, row count, and output file")
 def main(directory: str, output: str, port: int, verbose: bool) -> None:
     """Batch process CSV files with Deephaven."""
     try:
