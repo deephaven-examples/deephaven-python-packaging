@@ -1,4 +1,6 @@
+import keyword
 import os
+import re
 from pathlib import Path
 
 import click
@@ -20,7 +22,7 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
         # pyarrow and send it to the server as an Arrow table.
         source = session.import_table(pacsv.read_csv(input_file))
     except Exception as e:
-        raise click.ClickException(f"Failed to upload CSV file '{input_file}': {e}")
+        raise click.ClickException(f"Failed to upload CSV file '{input_file}': {e}") from e
 
     column_names = source.schema.names
     if "Score" not in column_names:
@@ -32,11 +34,10 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
     # This runs on the server. Only a handle to the result comes back to the client.
     try:
         result = source.update(formulas=["DoubleScore = Score * 2"])
-    except DHError:
+    except DHError as e:
         raise click.ClickException(
-            f"Failed to compute DoubleScore for '{input_path.name}'. "
-            "The 'Score' column must be numeric."
-        )
+            f"Failed to compute DoubleScore for '{input_path.name}': {e}"
+        ) from e
 
     if verbose:
         click.echo(f"Processed {result.size} rows")
@@ -58,9 +59,18 @@ def upload_and_query(session: Session, input_file: str, verbose: bool = False) -
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output, listing the file being uploaded and the number of rows processed")
 def main(input_file: str, host: str, port: int, auth_type: str, name: str, verbose: bool) -> None:
     """Upload a CSV file to a running Deephaven server and process it there."""
-    name = name or Path(input_file).stem
-    if not name.isidentifier():
-        raise click.BadParameter(f"'{name}' is not a valid Python identifier", param_hint="--name")
+    if name is None:
+        # Derive a valid identifier from the file stem: replace non-alphanumeric
+        # characters with underscores, strip leading underscores and digits, and
+        # fall back to "table" if nothing usable remains.
+        stem = re.sub(r"[^A-Za-z0-9_]", "_", Path(input_file).stem).lstrip("_")
+        stem = re.sub(r"^[0-9]+", "", stem)
+        name = stem or "table"
+    if not name.isidentifier() or keyword.iskeyword(name):
+        raise click.BadParameter(
+            f"'{name}' is not a valid table name (must be a Python identifier and not a keyword)",
+            param_hint="--name",
+        )
 
     try:
         session = Session(
@@ -75,14 +85,17 @@ def main(input_file: str, host: str, port: int, auth_type: str, name: str, verbo
         raise click.ClickException(
             f"Failed to connect to Deephaven server at {host}:{port} ({e}). "
             "Check that the server is running and that --auth-type matches its authentication."
-        )
+        ) from e
 
     # Session is a context manager: the connection closes when the block exits.
     with session:
         result = upload_and_query(session, input_file, verbose)
         # Binding gives the table a name on the server, so it shows up in the IDE and
         # other clients can open it with session.open_table(name).
-        session.bind_table(name, result)
+        try:
+            session.bind_table(name, result)
+        except DHError as e:
+            raise click.ClickException(f"Failed to bind table '{name}' on {host}:{port}: {e}") from e
 
     click.echo(f"Bound result table '{name}' on {host}:{port}")
 

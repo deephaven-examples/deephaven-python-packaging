@@ -68,6 +68,7 @@ Process a CSV file with Deephaven. The file must contain a numeric `Score` colum
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
+- `--heap` - JVM maximum heap size. Default: `4g`.
 - `-v, --verbose` - Verbose output, listing the file being processed and the number of rows processed.
 
 ## What to study

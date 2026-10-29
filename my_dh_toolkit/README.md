@@ -86,8 +86,7 @@ From the repository root, start Python and use the library:
 ```python
 # Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
-server = Server(port=10001, jvm_args=["-Xmx4g"])
-server.start()
+server = Server(port=10001, jvm_args=["-Xmx4g"]).start()
 
 # Import and use the installed library.
 from my_dh_toolkit.queries import filter_by_threshold, add_computed_columns
@@ -111,6 +110,7 @@ Process a single CSV file with Deephaven. The file must contain a numeric `Value
 **Options:**
 
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
+- `--heap` - JVM maximum heap size. Default: `4g`.
 - `-v, --verbose` - Verbose output, listing the file being processed and the number of rows processed.
 
 ### my-dh-toolkit-process
@@ -125,6 +125,7 @@ Batch process every CSV file in a directory. Each file must contain a numeric `V
 
 - `-o, --output` - Output directory. Must differ from the input directory. Default: `./output`.
 - `--port` - Port for the embedded Deephaven server. Default: `10001`.
+- `--heap` - JVM maximum heap size. Default: `4g`.
 - `-v, --verbose` - Verbose output, listing the number of CSV files found and, for each file, its name, row count, and output file.
 
 ## Available functions

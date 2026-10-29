@@ -68,7 +68,7 @@ The command has to authenticate the way the server is configured to accept. `--a
 | [Pre-shared key](https://deephaven.io/core/docs/how-to-guides/authentication/auth-psk/) | `io.deephaven.authentication.psk.PskAuthenticationHandler` | The key |
 | [Username and password](https://deephaven.io/core/docs/how-to-guides/authentication/auth-uname-pw/) | `Basic` | `username:password` |
 
-In each example below, `read -s` waits for you to type or paste the secret without showing it, and does not save it to shell history. Press Enter when done.
+To keep the token out of your shell history, enter it at a hidden prompt. In Bash and Zsh, `read -s` reads without echoing:
 
 ### Pre-shared key
 

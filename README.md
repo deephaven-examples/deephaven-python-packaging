@@ -1,6 +1,6 @@
 # Deephaven Python packaging examples
 
-This repository shows how to package Python code that uses [Deephaven Community Core](https://deephaven.io/community/) so that it can be installed with `pip`. It contains five small, self-contained example packages. Each example demonstrates one packaging pattern:
+This repository shows how to package Python code that uses [Deephaven](https://deephaven.io/) so that it can be installed with `pip`. It contains five small, self-contained example packages. Each example demonstrates one packaging pattern:
 
 | # | Example | Server model (dependency) | Pattern | Installing it provides |
 |---|---|---|---|---|
@@ -34,10 +34,10 @@ The command starts a Deephaven server, adds a column to the sample data, prints 
 
 ## Choose an example
 
-- Start from **`my_dh_library`** to share reusable functions that other projects, or code running in a Deephaven server, import. There is no command line interface.
-- Start from **`my_dh_cli`** to ship a tool that users run from a terminal. There is no importable library code.
-- Start from **`my_dh_toolkit`** to provide both: importable functions for Python users and commands for terminal users.
-- Start from **`my_dh_client_library`** or **`my_dh_client`** to connect to a server you already have running instead of starting one.
+- **Example 1, `my_dh_library`**: reusable functions that other projects, or code running in a Deephaven server, import. No command line interface.
+- **Example 2, `my_dh_cli`**: a tool that users run from a terminal. No importable library code.
+- **Example 3, `my_dh_toolkit`**: both importable functions for Python users and commands for terminal users.
+- **Example 4, `my_dh_client_library`** or **Example 5, `my_dh_client`**: connect to a server you already have running instead of starting one.
 
 ## Three ways to work with a Deephaven server
 
@@ -78,10 +78,10 @@ This rule shapes how the examples are written:
 
 ## Prerequisites
 
-- Python 3.9 or later, and pip. A virtual environment is recommended, as shown in the [Quick start](#quick-start).
-- For Examples 2 and 3, and for Example 1 when it runs outside a server: Java 17 or later with `JAVA_HOME` set, required by `deephaven-server`. `pip` does not install Java.
-- For Examples 4 and 5: a running Deephaven server to connect to. See [Start a server for Examples 4 and 5](#start-a-server-for-examples-4-and-5).
-- Deephaven 0.35.0 or later, declared in each example's `pyproject.toml` and installed automatically. For current versions and changes, see the [Deephaven release notes](https://github.com/deephaven/deephaven-core/releases).
+- **Python 3.9 or later**, and pip. A virtual environment is recommended, as shown in the [Quick start](#quick-start).
+- **Java 17 or later** with `JAVA_HOME` set, required by `deephaven-server` in Examples 1 to 3. `pip` does not install Java. Not needed for Examples 4 and 5.
+- **A running Deephaven server** to connect to, required by Examples 4 and 5. See [Start a server for Examples 4 and 5](#start-a-server-for-examples-4-and-5). Not needed for Examples 1 to 3.
+- **Deephaven 0.35.0 or later**, declared in each example's `pyproject.toml` and installed automatically. For current versions and changes, see the [Deephaven release notes](https://github.com/deephaven/deephaven-core/releases).
 
 The embedded servers in Examples 1 to 3 listen on port 10001 rather than Deephaven's usual 10000. That way they don't collide with the server on port 10000 that Examples 4 and 5 connect to.
 
@@ -156,8 +156,7 @@ The same library also works from a plain Python process, which then has to creat
 ```python
 # Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
-server = Server(port=10001, jvm_args=["-Xmx4g"])
-server.start()
+server = Server(port=10001, jvm_args=["-Xmx4g"]).start()
 
 # Import and use the installed library.
 from my_dh_library import filter_by_threshold
@@ -301,8 +300,7 @@ The same installation also provides the library. In a Python session, create and
 ```python
 # Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
-server = Server(port=10001, jvm_args=["-Xmx4g"])
-server.start()
+server = Server(port=10001, jvm_args=["-Xmx4g"]).start()
 
 # Import and use the installed library.
 from my_dh_toolkit.queries import filter_by_threshold
@@ -467,7 +465,7 @@ The examples above use editable installs (`pip install -e ./my_dh_cli`), which p
 ## Troubleshooting
 
 - **Command not found after installation:** the install failed, or the Python scripts directory is not on `PATH`. Check the install with `pip show my_dh_cli`, and install inside an activated virtual environment to avoid most `PATH` issues.
-- **`Address already in use` when an embedded-server command or snippet starts:** another process is using the port, which is 10001 by default for Examples 1 to 3. Pass a free port to the commands with `--port`, or change the `port` value in the `Server(...)` call in the library snippets.
+- **`Address already in use` when an embedded-server command or snippet starts:** another process is using the port, which is 10001 by default for Examples 1 to 3. This also happens if the server started for Examples 4 and 5 is still running on port 10000 and an embedded-server command tries to use the same port. Pass a free port to the commands with `--port`, or change the `port` value in the `Server(...)` call in the library snippets.
 - **`The Deephaven Server has not been initialized`:** a `deephaven` module, or a package that imports one, was imported before a `deephaven_server.Server` was created. Create the `Server` first, as described in [Import order for the `deephaven` module](#import-order-for-the-deephaven-module). Creating it also requires Java 17 or later through `JAVA_HOME`.
 - **`No module named 'deephaven_server'` when running Example 1 standalone:** `my_dh_library` depends only on `deephaven-core`. Install `deephaven-server` as well to create a `Server` in your own process.
 - **`failed to get the configuration constants` from a client example:** `pydeephaven` could not complete its first request to the server. Either no server is listening at the given host and port, or the server requires authentication the client did not provide. Check that the server is running and, if it uses a pre-shared key, pass the key as described in [Start a server for Examples 4 and 5](#start-a-server-for-examples-4-and-5).

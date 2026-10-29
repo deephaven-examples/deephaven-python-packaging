@@ -51,8 +51,7 @@ Outside a server, install `deephaven-server` as well, and create a `Server` befo
 ```python
 # Creating a Server starts the JVM, which deephaven modules need at import time.
 from deephaven_server import Server
-server = Server(port=10001, jvm_args=["-Xmx4g"])
-server.start()
+server = Server(port=10001, jvm_args=["-Xmx4g"]).start()
 
 # Import and use the installed library.
 from my_dh_library import filter_by_threshold
